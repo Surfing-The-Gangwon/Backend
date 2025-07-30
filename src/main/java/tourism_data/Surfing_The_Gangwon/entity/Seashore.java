@@ -1,4 +1,4 @@
-package entity;
+package tourism_data.Surfing_The_Gangwon.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

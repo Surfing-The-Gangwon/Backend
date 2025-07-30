@@ -1,14 +1,13 @@
-package controller;
+package tourism_data.Surfing_The_Gangwon.controller;
 
-import dto.SeashoreDto;
-import entity.Seashore;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import service.SeashoreService;
+import tourism_data.Surfing_The_Gangwon.dto.SeashoreDto;
+import tourism_data.Surfing_The_Gangwon.service.SeashoreService;
 
 @RestController
 @RequestMapping("/api/seashores")

@@ -1,7 +1,7 @@
-package dto;
+package tourism_data.Surfing_The_Gangwon.dto;
 
-import entity.Seashore;
 import lombok.Builder;
+import tourism_data.Surfing_The_Gangwon.entity.Seashore;
 
 @Builder
 public record SeashoreDto(
