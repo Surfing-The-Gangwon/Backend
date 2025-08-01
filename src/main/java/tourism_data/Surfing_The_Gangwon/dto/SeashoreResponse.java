@@ -4,7 +4,8 @@ import lombok.Builder;
 import tourism_data.Surfing_The_Gangwon.entity.Seashore;
 
 @Builder
-public record SeashoreDto(
+public record SeashoreResponse(
+    Long id,
     String name,
     String temp, // 온도
     String seaTemp, // 수온
@@ -13,8 +14,10 @@ public record SeashoreDto(
     String waveDir // 파도 방향
 ) {
 
-    public static SeashoreDto create(Seashore seashore) {
-        return SeashoreDto.builder()
+    public static SeashoreResponse create(Seashore seashore) {
+        // TODO
+        return SeashoreResponse.builder()
+            .id(seashore.getId())
             .name(seashore.getName())
             .build();
     }
