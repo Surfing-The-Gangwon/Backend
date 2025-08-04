@@ -29,6 +29,32 @@ public class BaseRequest {
 
     private static String getServiceKeyFromProperties() {
         // 환경변수에서 API 키 가져오기
-        return System.getenv("WEATHER_API_KEY");
+        String apiKey = System.getenv("WEATHER_API_KEY");
+        if (apiKey != null && !apiKey.isEmpty()) {
+            return apiKey;
+        }
+        
+        // VM options에서 API 키 가져오기
+        apiKey = System.getProperty("WEATHER_API_KEY");
+        if (apiKey != null && !apiKey.isEmpty()) {
+            return apiKey;
+        }
+        
+        // .env 파일에서 API 키 가져오기
+        try {
+            java.nio.file.Path envPath = java.nio.file.Paths.get(".env");
+            if (java.nio.file.Files.exists(envPath)) {
+                java.util.List<String> lines = java.nio.file.Files.readAllLines(envPath);
+                for (String line : lines) {
+                    if (line.startsWith("WEATHER_API_KEY=")) {
+                        return line.substring("WEATHER_API_KEY=".length()).trim();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // .env 파일을 읽을 수 없는 경우 무시
+        }
+        
+        return null;
     }
 }
