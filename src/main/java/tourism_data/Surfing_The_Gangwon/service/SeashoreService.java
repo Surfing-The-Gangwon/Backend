@@ -4,12 +4,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import tourism_data.Surfing_The_Gangwon.Constants.Format;
 import tourism_data.Surfing_The_Gangwon.Constants.Time;
+import tourism_data.Surfing_The_Gangwon.dto.BeachForecast;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreDetailResponse;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 import tourism_data.Surfing_The_Gangwon.entity.Seashore;
 import tourism_data.Surfing_The_Gangwon.integration.WeatherClient;
@@ -28,10 +30,12 @@ public class SeashoreService {
     public List<SeashoreResponse> getSeashoresByCity(Long cityId) {
         return seashoreRepository.findByCityId(cityId)
             .stream()
-            .map((Seashore seashore) ->
-                SeashoreResponse.create(seashore, getWaterTemp(seashore.getBeachCode()),
-                    getBeachForecast(seashore.getBeachCode())
-                ))
+            .map((Seashore seashore) -> {
+                BeachForecastResponse forecastResponse = getBeachForecast(seashore.getBeachCode());
+                return SeashoreResponse.create(seashore, getWaterTemp(seashore.getBeachCode()),
+                    BeachForecast.create(forecastResponse)
+                );
+            })
             .toList();
     }
 
@@ -49,10 +53,11 @@ public class SeashoreService {
             .build();
 
         WaterTempResponse response = weatherClient.getWeaterTemp(request);
-        return response.response().body.items.item.getFirst().tw;
+        var items = response.response().body.items.item;
+        return items.isEmpty() ? "" : items.getFirst().tw;
     }
 
-    private String getBeachForecast(Integer beachCode) {
+    private BeachForecastResponse getBeachForecast(Integer beachCode) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime validTimes = getValidBaseDateTime(now);
         var dateTime = validTimes.format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
@@ -66,8 +71,7 @@ public class SeashoreService {
             .beachNum(String.valueOf(beachCode))
             .build();
 
-        String beachForecastResponse = weatherClient.getBeachForecast(request);
-        return beachForecastResponse;
+        return weatherClient.getBeachForecast(request);
     }
 
     private LocalDateTime getValidBaseDateTime(LocalDateTime currTime) {

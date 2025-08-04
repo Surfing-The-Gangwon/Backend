@@ -8,6 +8,7 @@ import tourism_data.Surfing_The_Gangwon.Constants.URL.WEATHER;
 import tourism_data.Surfing_The_Gangwon.dto.request.BaseRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 
 import java.net.URI;
@@ -25,25 +26,25 @@ public class WeatherClient {
 
     public WaterTempResponse getWeaterTemp(WaterTempRequest request) {
         // 먼저 String으로 응답을 받아서 로깅
-        String rawResponse = webClient.get()
-                .uri(uriBuilder -> {
-                    URI uri = uriBuilder
-                            .path(WEATHER.WATER_TEMP)
-                            .queryParam(BaseRequest.SERVICE_KEY, UriUtils.decode(request.getServiceKey(), StandardCharsets.UTF_8))
-                            .queryParam(BaseRequest.PAGE_NO, request.getPageNo())
-                            .queryParam(BaseRequest.NUM_OF_ROWS, request.getNumOfRows())
-                            .queryParam(BaseRequest.DATA_TYPE, request.getDataType())
-                            .queryParam(BaseRequest.BEACH_NUM, request.getBeachNum())
-                            .queryParam(WaterTempRequest.SEARCH_TIME, request.getSearchTime())
-                            .build();
-                    log.info("API Request URL: {}", uri);
-                    return uri;
-                })
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-
-        log.info("Raw API Response: {}", rawResponse);
+//        String rawResponse = webClient.get()
+//                .uri(uriBuilder -> {
+//                    URI uri = uriBuilder
+//                            .path(WEATHER.WATER_TEMP)
+//                            .queryParam(BaseRequest.SERVICE_KEY, UriUtils.decode(request.getServiceKey(), StandardCharsets.UTF_8))
+//                            .queryParam(BaseRequest.PAGE_NO, request.getPageNo())
+//                            .queryParam(BaseRequest.NUM_OF_ROWS, request.getNumOfRows())
+//                            .queryParam(BaseRequest.DATA_TYPE, request.getDataType())
+//                            .queryParam(BaseRequest.BEACH_NUM, request.getBeachNum())
+//                            .queryParam(WaterTempRequest.SEARCH_TIME, request.getSearchTime())
+//                            .build();
+//                    log.info("API Request URL: {}", uri);
+//                    return uri;
+//                })
+//                .retrieve()
+//                .bodyToMono(String.class)
+//                .block();
+//
+//        log.info("Raw API Response: {}", rawResponse);
 
         // 이제 WaterTempResponse로 파싱
         WaterTempResponse response = webClient.get()
@@ -69,10 +70,10 @@ public class WeatherClient {
         return response;
     }
 
-    public String getBeachForecast(BeachForecastRequest request) {
-        String response = webClient.get()
+    public BeachForecastResponse getBeachForecast(BeachForecastRequest request) {
+        BeachForecastResponse response = webClient.get()
             .uri(uriBuilder -> {
-                URI uri = uriBuilder
+                return uriBuilder
                     .path(WEATHER.BEACH_FORECAST)
                     .queryParam(BaseRequest.SERVICE_KEY, UriUtils.decode(request.getServiceKey(), StandardCharsets.UTF_8))
                     .queryParam(BaseRequest.PAGE_NO, request.getPageNo())
@@ -82,15 +83,10 @@ public class WeatherClient {
                     .queryParam(BeachForecastRequest.BASE_DATE, request.getBaseDate())
                     .queryParam(BeachForecastRequest.BASE_TIME, request.getBaseTime())
                     .build();
-
-                log.info("API Request URL: {}", uri);
-                return uri;
             })
             .retrieve()
-            .bodyToMono(String.class)
+            .bodyToMono(BeachForecastResponse.class)
             .block();
-
-        log.info("Raw API Response: {}", response);
 
         if (response == null) {
             throw new IllegalStateException("Empty response from Weather API");

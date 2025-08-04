@@ -3,7 +3,7 @@ package tourism_data.Surfing_The_Gangwon.dto.response.weather;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
-import tourism_data.Surfing_The_Gangwon.util.FlexibleItemsDeserializer;
+import tourism_data.Surfing_The_Gangwon.util.WaterTempItemsDeserializer;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public record WaterTempResponse(
     }
 
     public static class Items extends BaseResponse.Items<WaterTempResponse> {
-        @JsonDeserialize(using = FlexibleItemsDeserializer.class)
+        @JsonDeserialize(using = WaterTempItemsDeserializer.class)
         public List<Item> item;
     }
 

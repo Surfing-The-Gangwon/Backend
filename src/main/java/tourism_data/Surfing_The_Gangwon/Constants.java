@@ -20,4 +20,12 @@ public class Constants {
         // 기상청 단기예보 호출시 호출가능한 시간대
         public static final int[] validTimes = new int[]{2, 5, 8, 11, 14, 17, 20, 23};
     }
+
+    // 기상청 API 예보 카테고리 코드
+    public static class ForecastCategory {
+        public static final String TMP = "TMP"; // 기온
+        public static final String WAV = "WAV"; // 파고
+        public static final String VEC = "VEC"; // 풍향
+        public static final String WSD = "WSD"; // 풍속
+    }
 }

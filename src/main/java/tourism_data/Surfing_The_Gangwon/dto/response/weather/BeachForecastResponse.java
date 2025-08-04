@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.List;
 import lombok.Builder;
-import tourism_data.Surfing_The_Gangwon.util.FlexibleItemsDeserializer;
+import tourism_data.Surfing_The_Gangwon.util.BeachForecastItemsDeserializer;
 
 @Builder
 public record BeachForecastResponse(
@@ -19,7 +19,7 @@ public record BeachForecastResponse(
     }
 
     public static class Items extends BaseResponse.Items<BeachForecastResponse> {
-        @JsonDeserialize(using = FlexibleItemsDeserializer.class)
+        @JsonDeserialize(using = BeachForecastItemsDeserializer.class)
         public List<Item> item;
     }
 

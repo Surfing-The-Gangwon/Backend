@@ -10,16 +10,19 @@ public record SeashoreResponse(
     String temp, // 온도
     String waterTemp, // 수온
     String waveHeight, // 파고
-    String waveSpeed, // 파도속도
-    String waveDir // 파도 방향
+    String windSpeed, //
+    String windDir // 풍향
 ) {
 
-    public static SeashoreResponse create(Seashore seashore, String waterTemp, String beachForecast) {
+    public static SeashoreResponse create(Seashore seashore, String waterTemp, BeachForecast forecast) {
         // TODO
         return SeashoreResponse.builder()
             .id(seashore.getId())
             .name(seashore.getName())
-            .waveSpeed(beachForecast)
+            .temp(forecast.temp())
+            .waveHeight(forecast.waveHeight())
+            .windSpeed(forecast.windSpeed())
+            .windDir(forecast.windDir())
             .waterTemp(waterTemp)
             .build();
     }
