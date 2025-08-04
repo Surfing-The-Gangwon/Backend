@@ -10,4 +10,8 @@ public class Constants {
             public static final String SEA_TEMP = "/1360000/BeachInfoservice/getTwBuoyBeach";
         }
     }
+
+    public static class Format {
+        public static final String DATE_FORMAT_ONE_LINE = "yyyyMMddHHmm";
+    }
 }

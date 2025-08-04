@@ -2,6 +2,8 @@ package tourism_data.Surfing_The_Gangwon.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import tourism_data.Surfing_The_Gangwon.Constants;
+import tourism_data.Surfing_The_Gangwon.Constants.Format;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreDetailResponse;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
 import java.util.List;
@@ -25,7 +27,9 @@ public class SeashoreService {
     public List<SeashoreResponse> getSeashoresByCity(Long cityId) {
         return seashoreRepository.findByCityId(cityId)
             .stream()
-            .map((Seashore seashore) -> SeashoreResponse.create(seashore, getSeaTemp(seashore.getBeachCode())))
+            .map((Seashore seashore) ->
+                SeashoreResponse.create(seashore, getSeaTemp(seashore.getBeachCode())
+                ))
             .toList();
     }
 
@@ -36,7 +40,7 @@ public class SeashoreService {
     }
 
     private String getSeaTemp(Integer beachCode) {
-        var searchTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        var searchTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
         SeaTempRequest request = SeaTempRequest.builder()
             .beachNum(String.valueOf(beachCode))
             .searchTime(searchTime)
