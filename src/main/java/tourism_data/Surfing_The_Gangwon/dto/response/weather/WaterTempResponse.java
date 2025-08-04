@@ -2,7 +2,6 @@ package tourism_data.Surfing_The_Gangwon.dto.response.weather;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.ser.Serializers.Base;
 import lombok.Builder;
 import tourism_data.Surfing_The_Gangwon.util.FlexibleItemsDeserializer;
 
