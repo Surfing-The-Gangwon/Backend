@@ -8,18 +8,18 @@ public record SeashoreResponse(
     Long id,
     String name,
     String temp, // 온도
-    String seaTemp, // 수온
+    String waterTemp, // 수온
     String waveHeight, // 파고
     String waveSpeed, // 파도속도
     String waveDir // 파도 방향
 ) {
 
-    public static SeashoreResponse create(Seashore seashore, String seaTemp) {
+    public static SeashoreResponse create(Seashore seashore, String waterTemp) {
         // TODO
         return SeashoreResponse.builder()
             .id(seashore.getId())
             .name(seashore.getName())
-            .seaTemp(seaTemp)
+            .waterTemp(waterTemp)
             .build();
     }
 }

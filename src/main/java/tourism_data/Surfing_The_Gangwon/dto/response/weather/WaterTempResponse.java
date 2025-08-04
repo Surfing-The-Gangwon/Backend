@@ -7,7 +7,7 @@ import lombok.Builder;
 import tourism_data.Surfing_The_Gangwon.util.FlexibleItemsDeserializer;
 
 @Builder
-public record SeaTempResponse(
+public record WaterTempResponse(
     Response response
 ) {
 

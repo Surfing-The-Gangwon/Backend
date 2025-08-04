@@ -2,14 +2,13 @@ package tourism_data.Surfing_The_Gangwon.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import tourism_data.Surfing_The_Gangwon.Constants;
 import tourism_data.Surfing_The_Gangwon.Constants.Format;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreDetailResponse;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
 import java.util.List;
 import org.springframework.stereotype.Service;
-import tourism_data.Surfing_The_Gangwon.dto.request.SeaTempRequest;
-import tourism_data.Surfing_The_Gangwon.dto.response.weather.SeaTempResponse;
+import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 import tourism_data.Surfing_The_Gangwon.entity.Seashore;
 import tourism_data.Surfing_The_Gangwon.integration.WeatherClient;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
@@ -28,7 +27,7 @@ public class SeashoreService {
         return seashoreRepository.findByCityId(cityId)
             .stream()
             .map((Seashore seashore) ->
-                SeashoreResponse.create(seashore, getSeaTemp(seashore.getBeachCode())
+                SeashoreResponse.create(seashore, getWaterTemp(seashore.getBeachCode())
                 ))
             .toList();
     }
@@ -39,14 +38,14 @@ public class SeashoreService {
         return SeashoreDetailResponse.create(seashoreEntity);
     }
 
-    private String getSeaTemp(Integer beachCode) {
+    private String getWaterTemp(Integer beachCode) {
         var searchTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
-        SeaTempRequest request = SeaTempRequest.builder()
+        WaterTempRequest request = WaterTempRequest.builder()
             .beachNum(String.valueOf(beachCode))
             .searchTime(searchTime)
             .build();
 
-        SeaTempResponse response = weatherClient.getSeaTemp(request);
+        WaterTempResponse response = weatherClient.getWeaterTemp(request);
         return response.response().body.items.item.getFirst().tw;
     }
 }

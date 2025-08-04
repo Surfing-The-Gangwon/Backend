@@ -6,8 +6,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriUtils;
 import tourism_data.Surfing_The_Gangwon.Constants.URL.WEATHER;
 import tourism_data.Surfing_The_Gangwon.dto.request.BaseRequest;
-import tourism_data.Surfing_The_Gangwon.dto.request.SeaTempRequest;
-import tourism_data.Surfing_The_Gangwon.dto.response.weather.SeaTempResponse;
+import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -22,7 +22,7 @@ public class WeatherClient {
         this.webClient = webClient;
     }
 
-    public SeaTempResponse getSeaTemp(SeaTempRequest request) {
+    public WaterTempResponse getWeaterTemp(WaterTempRequest request) {
         // 먼저 String으로 응답을 받아서 로깅
         String rawResponse = webClient.get()
                 .uri(uriBuilder -> {
@@ -33,7 +33,7 @@ public class WeatherClient {
                             .queryParam(BaseRequest.NUM_OF_ROWS, request.getNumOfRows())
                             .queryParam(BaseRequest.DATA_TYPE, request.getDataType())
                             .queryParam(BaseRequest.BEACH_NUM, request.getBeachNum())
-                            .queryParam(SeaTempRequest.SEARCH_TIME, request.getSearchTime())
+                            .queryParam(WaterTempRequest.SEARCH_TIME, request.getSearchTime())
                             .build();
                     log.info("API Request URL: {}", uri);
                     return uri;
@@ -44,8 +44,8 @@ public class WeatherClient {
 
         log.info("Raw API Response: {}", rawResponse);
 
-        // 이제 SeaTempResponse로 파싱
-        SeaTempResponse response = webClient.get()
+        // 이제 WaterTempResponse로 파싱
+        WaterTempResponse response = webClient.get()
                 .uri(uriBuilder -> {
                     URI uri = uriBuilder
                             .path(WEATHER.SEA_TEMP)
@@ -54,12 +54,12 @@ public class WeatherClient {
                             .queryParam(BaseRequest.NUM_OF_ROWS, request.getNumOfRows())
                             .queryParam(BaseRequest.DATA_TYPE, request.getDataType())
                             .queryParam(BaseRequest.BEACH_NUM, request.getBeachNum())
-                            .queryParam(SeaTempRequest.SEARCH_TIME, request.getSearchTime())
+                            .queryParam(WaterTempRequest.SEARCH_TIME, request.getSearchTime())
                             .build();
                     return uri;
                 })
                 .retrieve()
-                .bodyToMono(SeaTempResponse.class)
+                .bodyToMono(WaterTempResponse.class)
                 .block();
 
         if (response == null) {
