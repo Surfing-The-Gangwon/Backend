@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import tourism_data.Surfing_The_Gangwon.Constants.Format;
 import tourism_data.Surfing_The_Gangwon.Constants.Time;
+import tourism_data.Surfing_The_Gangwon.Constants.Unit;
 import tourism_data.Surfing_The_Gangwon.dto.BeachForecast;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreDetailResponse;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
@@ -54,7 +55,7 @@ public class SeashoreService {
 
         WaterTempResponse response = weatherClient.getWeaterTemp(request);
         var items = response.response().body.items.item;
-        return items.isEmpty() ? "" : items.getFirst().tw;
+        return items.isEmpty() ? "" : items.getFirst().tw + Unit.CELSIUS;
     }
 
     private BeachForecastResponse getBeachForecast(Integer beachCode) {

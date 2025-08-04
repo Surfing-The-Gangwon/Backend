@@ -28,4 +28,11 @@ public class Constants {
         public static final String VEC = "VEC"; // 풍향
         public static final String WSD = "WSD"; // 풍속
     }
+
+    public static class Unit {
+        public static final String CELSIUS = "°C";
+        public static final String MS = "m/s";
+        public static final String DEG = "deg"; // TODO: 각도 (추후, W(서), N(북) 등으로 수정 예정)
+        public static final String METER = "M";
+    }
 }
