@@ -3,6 +3,7 @@ package tourism_data.Surfing_The_Gangwon.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import tourism_data.Surfing_The_Gangwon.Constants.Format;
+import tourism_data.Surfing_The_Gangwon.Constants.Time;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreDetailResponse;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
 import java.util.List;
@@ -52,9 +53,11 @@ public class SeashoreService {
     }
 
     private String getBeachForecast(Integer beachCode) {
-        var dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
-        var baseDate = dateTime.substring(0, 8).trim();
-        var baseTime = dateTime.substring(8).trim();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime validTimes = getValidBaseDateTime(now);
+        var dateTime = validTimes.format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        var baseDate = dateTime.substring(0, 8);
+        var baseTime = dateTime.substring(8);
 
         BeachForecastRequest request = BeachForecastRequest.builder()
             .numOfRows(String.valueOf(20))
@@ -65,6 +68,20 @@ public class SeashoreService {
 
         String beachForecastResponse = weatherClient.getBeachForecast(request);
         return beachForecastResponse;
+    }
 
+    private LocalDateTime getValidBaseDateTime(LocalDateTime currTime) {
+        int currHour = currTime.getHour();
+        int[] validTimes = Time.validTimes;
+
+        // 현재 시간보다 이전의 가장 가까운 유효 시간 탐색
+        for (int i = validTimes.length - 1; i >= 0; i--) {
+            if (currHour >= validTimes[i]) {
+                return currTime.withHour(validTimes[i]).withMinute(0).withSecond(0).withNano(0);
+            }
+        }
+
+        // 현재 시간이 02시보다 이전이면, 전날의 23시 사용 (오전 12시 이후, 익일 02시 이전일 경우)
+        return currTime.minusDays(1).withHour(23).withMinute(0).withSecond(0).withNano(0);
     }
 }

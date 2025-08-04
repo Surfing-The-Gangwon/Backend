@@ -15,4 +15,9 @@ public class Constants {
     public static class Format {
         public static final String DATE_FORMAT_ONE_LINE = "yyyyMMddHHmm";
     }
+
+    public static class Time {
+        // 기상청 단기예보 호출시 호출가능한 시간대
+        public static final int[] validTimes = new int[]{2, 5, 8, 11, 14, 17, 20, 23};
+    }
 }
