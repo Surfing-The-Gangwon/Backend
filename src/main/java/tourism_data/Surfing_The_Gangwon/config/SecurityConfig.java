@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.reactive.function.client.WebClient;
+import tourism_data.Surfing_The_Gangwon.Constants.URL.WEATHER;
 
 @Configuration
 @EnableWebSecurity
@@ -20,5 +22,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable());
         
         return http.build();
+    }
+    
+    @Bean
+    public WebClient webClient() {
+        return WebClient.builder()
+                .baseUrl(WEATHER.BASE_URL)
+                .build();
     }
 }
