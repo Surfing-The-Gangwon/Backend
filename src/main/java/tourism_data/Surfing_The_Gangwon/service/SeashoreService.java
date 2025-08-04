@@ -43,6 +43,6 @@ public class SeashoreService {
             .build();
 
         SeaTempResponse response = weatherClient.getSeaTemp(request);
-        return response.response().body.items.getFirst().tw;
+        return response.response().body.items.item.getFirst().tw;
     }
 }

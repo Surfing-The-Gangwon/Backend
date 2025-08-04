@@ -23,7 +23,8 @@ public class WeatherClient {
     }
 
     public SeaTempResponse getSeaTemp(SeaTempRequest request) {
-        SeaTempResponse response = webClient.get()
+        // 먼저 String으로 응답을 받아서 로깅
+        String rawResponse = webClient.get()
                 .uri(uriBuilder -> {
                     URI uri = uriBuilder
                             .path(WEATHER.SEA_TEMP)
@@ -35,6 +36,26 @@ public class WeatherClient {
                             .queryParam(SeaTempRequest.SEARCH_TIME, request.getSearchTime())
                             .build();
                     log.info("API Request URL: {}", uri);
+                    return uri;
+                })
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        log.info("Raw API Response: {}", rawResponse);
+
+        // 이제 SeaTempResponse로 파싱
+        SeaTempResponse response = webClient.get()
+                .uri(uriBuilder -> {
+                    URI uri = uriBuilder
+                            .path(WEATHER.SEA_TEMP)
+                            .queryParam(BaseRequest.SERVICE_KEY, UriUtils.decode(request.getServiceKey(), StandardCharsets.UTF_8))
+                            .queryParam(BaseRequest.PAGE_NO, request.getPageNo())
+                            .queryParam(BaseRequest.NUM_OF_ROWS, request.getNumOfRows())
+                            .queryParam(BaseRequest.DATA_TYPE, request.getDataType())
+                            .queryParam(BaseRequest.BEACH_NUM, request.getBeachNum())
+                            .queryParam(SeaTempRequest.SEARCH_TIME, request.getSearchTime())
+                            .build();
                     return uri;
                 })
                 .retrieve()
