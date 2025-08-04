@@ -7,7 +7,8 @@ public class Constants {
 
         public static class WEATHER {
             public static final String BASE_URL = "https://apis.data.go.kr";
-            public static final String SEA_TEMP = "/1360000/BeachInfoservice/getTwBuoyBeach";
+            public static final String WATER_TEMP = "/1360000/BeachInfoservice/getTwBuoyBeach";
+            public static final String BEACH_FORECAST = "/1360000/BeachInfoservice/getVilageFcstBeach";
         }
     }
 

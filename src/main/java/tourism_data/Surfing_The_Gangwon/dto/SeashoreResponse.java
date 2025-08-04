@@ -14,11 +14,12 @@ public record SeashoreResponse(
     String waveDir // 파도 방향
 ) {
 
-    public static SeashoreResponse create(Seashore seashore, String waterTemp) {
+    public static SeashoreResponse create(Seashore seashore, String waterTemp, String beachForecast) {
         // TODO
         return SeashoreResponse.builder()
             .id(seashore.getId())
             .name(seashore.getName())
+            .waveSpeed(beachForecast)
             .waterTemp(waterTemp)
             .build();
     }

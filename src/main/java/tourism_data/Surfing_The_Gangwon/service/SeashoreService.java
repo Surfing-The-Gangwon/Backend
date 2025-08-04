@@ -7,6 +7,7 @@ import tourism_data.Surfing_The_Gangwon.dto.SeashoreDetailResponse;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 import tourism_data.Surfing_The_Gangwon.entity.Seashore;
@@ -27,7 +28,8 @@ public class SeashoreService {
         return seashoreRepository.findByCityId(cityId)
             .stream()
             .map((Seashore seashore) ->
-                SeashoreResponse.create(seashore, getWaterTemp(seashore.getBeachCode())
+                SeashoreResponse.create(seashore, getWaterTemp(seashore.getBeachCode()),
+                    getBeachForecast(seashore.getBeachCode())
                 ))
             .toList();
     }
@@ -47,5 +49,22 @@ public class SeashoreService {
 
         WaterTempResponse response = weatherClient.getWeaterTemp(request);
         return response.response().body.items.item.getFirst().tw;
+    }
+
+    private String getBeachForecast(Integer beachCode) {
+        var dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        var baseDate = dateTime.substring(0, 8).trim();
+        var baseTime = dateTime.substring(8).trim();
+
+        BeachForecastRequest request = BeachForecastRequest.builder()
+            .numOfRows(String.valueOf(20))
+            .baseDate(baseDate)
+            .baseTime(baseTime)
+            .beachNum(String.valueOf(beachCode))
+            .build();
+
+        String beachForecastResponse = weatherClient.getBeachForecast(request);
+        return beachForecastResponse;
+
     }
 }
