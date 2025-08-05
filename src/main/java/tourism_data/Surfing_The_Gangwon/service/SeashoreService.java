@@ -89,4 +89,8 @@ public class SeashoreService {
         // 현재 시간이 02시보다 이전이면, 전날의 23시 사용 (오전 12시 이후, 익일 02시 이전일 경우)
         return currTime.minusDays(1).withHour(23).withMinute(0).withSecond(0).withNano(0);
     }
+
+    private String getWavePeriod(Integer beachCode) {
+        return "";
+    }
 }
