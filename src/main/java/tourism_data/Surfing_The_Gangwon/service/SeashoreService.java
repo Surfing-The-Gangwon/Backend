@@ -15,6 +15,7 @@ import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WavePeriodRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.WavePeriodResponse;
 import tourism_data.Surfing_The_Gangwon.entity.Seashore;
 import tourism_data.Surfing_The_Gangwon.integration.WeatherClient;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
@@ -95,11 +96,12 @@ public class SeashoreService {
         var searchTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
         WavePeriodRequest request = WavePeriodRequest.builder()
             .tm(searchTime)
-            .stn(0)
+            .stn(0) // TODO : 지역별 지점번호 넣기
             .help(0)
             .authKey("0nCxR-PFQiSwsUfjxcIkZA")
             .build();
 
-        return weatherClient.getWavePeriod(request);
+        WavePeriodResponse response = WavePeriodResponse.create(weatherClient.getWavePeriod(request));
+        return response.wp();
     }
 }

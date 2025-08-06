@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriUtils;
+import java.time.Duration;
 import tourism_data.Surfing_The_Gangwon.Constants.URL.WEATHER;
 import tourism_data.Surfing_The_Gangwon.dto.request.BaseRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
@@ -42,6 +43,7 @@ public class WeatherClient {
             .uri(fullUrl)
             .retrieve()
             .bodyToMono(String.class)
+            .timeout(Duration.ofSeconds(30))
             .block();
 
         log.info("Raw CSV Response: {}", csvResponse);
@@ -85,6 +87,7 @@ public class WeatherClient {
                 })
                 .retrieve()
                 .bodyToMono(WaterTempResponse.class)
+                .timeout(Duration.ofSeconds(30))
                 .block();
 
         if (response == null) {
@@ -110,6 +113,7 @@ public class WeatherClient {
             })
             .retrieve()
             .bodyToMono(BeachForecastResponse.class)
+            .timeout(Duration.ofSeconds(30))
             .block();
 
         if (response == null) {
