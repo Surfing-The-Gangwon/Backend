@@ -68,7 +68,7 @@ public class WeatherClient {
                 .uri(uriBuilder -> {
                     return uriBuilder
                             .path(WEATHER.WATER_TEMP)
-                            .queryParam(BaseRequest.SERVICE_KEY, UriUtils.decode(request.getServiceKey(), StandardCharsets.UTF_8))
+                            .queryParam(BaseRequest.SERVICE_KEY, UriUtils.decode(BaseRequest.getServiceKey(), StandardCharsets.UTF_8))
                             .queryParam(BaseRequest.PAGE_NO, request.getPageNo())
                             .queryParam(BaseRequest.NUM_OF_ROWS, request.getNumOfRows())
                             .queryParam(BaseRequest.DATA_TYPE, request.getDataType())

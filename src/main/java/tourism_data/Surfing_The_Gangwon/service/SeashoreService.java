@@ -20,6 +20,8 @@ import tourism_data.Surfing_The_Gangwon.entity.Seashore;
 import tourism_data.Surfing_The_Gangwon.integration.WeatherClient;
 import tourism_data.Surfing_The_Gangwon.mapper.BeachStationMapper;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
+import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager;
+import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager.ApiKeyType;
 
 @Service
 public class SeashoreService {
@@ -102,41 +104,14 @@ public class SeashoreService {
             .tm(searchTime)
             .stn(stnCode)
             .help(0)
-            .authKey(getWavePeriodAuthKeyFromProperties())
+            .authKey(getApiHubAuthKey())
             .build();
 
         WavePeriodResponse response = WavePeriodResponse.create(weatherClient.getWavePeriod(request));
         return response.wp() + Unit.SECONDS;
     }
 
-    public static String getWavePeriodAuthKeyFromProperties() {
-        // 환경변수에서 파주기 API 키 가져오기
-        String authKey = System.getenv("API_HUB_AUTH_KEY");
-        if (authKey != null && !authKey.isEmpty()) {
-            return authKey;
-        }
-
-        // VM options에서 파주기 API 키 가져오기
-        authKey = System.getProperty("API_HUB_AUTH_KEY");
-        if (authKey != null && !authKey.isEmpty()) {
-            return authKey;
-        }
-
-        // .env 파일에서 파주기 API 키 가져오기
-        try {
-            java.nio.file.Path envPath = java.nio.file.Paths.get(".env");
-            if (java.nio.file.Files.exists(envPath)) {
-                java.util.List<String> lines = java.nio.file.Files.readAllLines(envPath);
-                for (String line : lines) {
-                    if (line.startsWith("API_HUB_AUTH_KEY=")) {
-                        return line.substring("API_HUB_AUTH_KEY=".length()).trim();
-                    }
-                }
-            }
-        } catch (Exception e) {
-            // .env 파일을 읽을 수 없는 경우 무시
-        }
-
-        return null;
+    public static String getApiHubAuthKey() {
+        return ApiKeyManager.getApiKey(ApiKeyType.HUB_API);
     }
 }
