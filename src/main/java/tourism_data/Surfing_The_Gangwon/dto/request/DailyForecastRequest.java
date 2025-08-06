@@ -3,7 +3,7 @@ package tourism_data.Surfing_The_Gangwon.dto.request;
 import lombok.Builder;
 
 @Builder
-public record ShortRangeForecastRequest(
+public record DailyForecastRequest(
     String reg, // 예보구역코드
     String tmfc1, // 조회 기간: [tmfc1 ~ tmfc2] : 년월일시(KST)
     String tmfc2, // 조회 기간: [tmfc1 ~ tmfc2] : 년월일시(KST)

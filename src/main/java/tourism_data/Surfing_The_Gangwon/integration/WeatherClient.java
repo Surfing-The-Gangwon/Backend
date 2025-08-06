@@ -8,7 +8,7 @@ import java.time.Duration;
 import tourism_data.Surfing_The_Gangwon.Constants.URL.WEATHER;
 import tourism_data.Surfing_The_Gangwon.dto.request.BaseRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
-import tourism_data.Surfing_The_Gangwon.dto.request.ShortRangeForecastRequest;
+import tourism_data.Surfing_The_Gangwon.dto.request.DailyForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WavePeriodRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
@@ -26,7 +26,7 @@ public class WeatherClient {
         this.webClient = webClient;
     }
 
-    public String getShortRangeForecast(ShortRangeForecastRequest request) {
+    public String getDailyRangeForecast(DailyForecastRequest request) {
         String fullUrl = String.format("%sreg=%s&tmfc1=%s&tmfc2=%s&disp=%s&help=%s&authKey=%s",
             WEATHER.SHORT_RANGE_FORECAST,
             request.reg(),

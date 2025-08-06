@@ -12,7 +12,7 @@ import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
-import tourism_data.Surfing_The_Gangwon.dto.request.ShortRangeForecastRequest;
+import tourism_data.Surfing_The_Gangwon.dto.request.DailyForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WavePeriodRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
@@ -45,7 +45,7 @@ public class SeashoreService {
                 BeachForecastResponse forecastResponse = getBeachForecast(seashore.getBeachCode());
                 return SeashoreResponse.create(seashore, getWaterTemp(seashore.getBeachCode()),
                     BeachForecast.create(forecastResponse), getWavePeriod(seashore.getBeachCode()),
-                    getShortRangeForecast(seashore.getBeachCode())
+                    getDailyRangeForecast(seashore.getBeachCode())
                 );
             })
             .toList();
@@ -118,14 +118,14 @@ public class SeashoreService {
     }
 
     // 단기 해상 예보 조회
-    private String getShortRangeForecast(Integer beachCode) {
+    private String getDailyRangeForecast(Integer beachCode) {
         var startDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
         var endDateTime = LocalDateTime.now().plusDays(2).format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
         var start = startDateTime.substring(0, 10);
         var end = endDateTime.substring(0, 10);
 
         var regId = BeachRegIdMapper.getRegId(String.valueOf(beachCode));
-        ShortRangeForecastRequest request = ShortRangeForecastRequest.builder()
+        DailyForecastRequest request = DailyForecastRequest.builder()
             .reg(regId)
             .tmfc1(start)
             .tmfc2(end)
@@ -134,7 +134,7 @@ public class SeashoreService {
             .authKey(getApiHubAuthKey())
             .build();
 
-        var response = weatherClient.getShortRangeForecast(request);
+        var response = weatherClient.getDailyRangeForecast(request);
         log.info(response);
         return response;
     }
