@@ -14,10 +14,6 @@ import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastRespon
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Slf4j
 @Component
@@ -36,18 +32,13 @@ public class WeatherClient {
             request.stn(),
             request.help(),
             request.authKey());
-        
-        log.info("API Request URL: {}", fullUrl);
-        
-        String csvResponse = webClient.get()
+
+        return webClient.get()
             .uri(fullUrl)
             .retrieve()
             .bodyToMono(String.class)
             .timeout(Duration.ofSeconds(30))
             .block();
-
-        log.info("Raw CSV Response: {}", csvResponse);
-        return csvResponse;
     }
 
     public WaterTempResponse getWeaterTemp(WaterTempRequest request) {

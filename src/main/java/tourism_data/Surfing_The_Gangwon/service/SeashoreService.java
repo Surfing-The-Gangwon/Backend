@@ -18,6 +18,7 @@ import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WavePeriodResponse;
 import tourism_data.Surfing_The_Gangwon.entity.Seashore;
 import tourism_data.Surfing_The_Gangwon.integration.WeatherClient;
+import tourism_data.Surfing_The_Gangwon.mapper.BeachStationMapper;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
 
 @Service
@@ -94,14 +95,48 @@ public class SeashoreService {
 
     private String getWavePeriod(Integer beachCode) {
         var searchTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        // 지역별 지점번호 변환값 (관측지점 코드 반환)
+        var stnCode = BeachStationMapper.getStationCode(String.valueOf(beachCode));
+
         WavePeriodRequest request = WavePeriodRequest.builder()
             .tm(searchTime)
-            .stn(0) // TODO : 지역별 지점번호 넣기
+            .stn(stnCode)
             .help(0)
-            .authKey("0nCxR-PFQiSwsUfjxcIkZA")
+            .authKey(getWavePeriodAuthKeyFromProperties())
             .build();
 
         WavePeriodResponse response = WavePeriodResponse.create(weatherClient.getWavePeriod(request));
-        return response.wp();
+        return response.wp() + Unit.SECONDS;
+    }
+
+    public static String getWavePeriodAuthKeyFromProperties() {
+        // 환경변수에서 파주기 API 키 가져오기
+        String authKey = System.getenv("API_HUB_AUTH_KEY");
+        if (authKey != null && !authKey.isEmpty()) {
+            return authKey;
+        }
+
+        // VM options에서 파주기 API 키 가져오기
+        authKey = System.getProperty("API_HUB_AUTH_KEY");
+        if (authKey != null && !authKey.isEmpty()) {
+            return authKey;
+        }
+
+        // .env 파일에서 파주기 API 키 가져오기
+        try {
+            java.nio.file.Path envPath = java.nio.file.Paths.get(".env");
+            if (java.nio.file.Files.exists(envPath)) {
+                java.util.List<String> lines = java.nio.file.Files.readAllLines(envPath);
+                for (String line : lines) {
+                    if (line.startsWith("API_HUB_AUTH_KEY=")) {
+                        return line.substring("API_HUB_AUTH_KEY=".length()).trim();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // .env 파일을 읽을 수 없는 경우 무시
+        }
+
+        return null;
     }
 }
