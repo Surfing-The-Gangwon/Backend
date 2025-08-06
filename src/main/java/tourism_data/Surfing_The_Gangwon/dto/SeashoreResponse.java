@@ -1,8 +1,10 @@
 package tourism_data.Surfing_The_Gangwon.dto;
 
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 import tourism_data.Surfing_The_Gangwon.entity.Seashore;
 
+@Slf4j
 @Builder
 public record SeashoreResponse(
     Long id,
@@ -16,7 +18,10 @@ public record SeashoreResponse(
 ) {
 
     public static SeashoreResponse create(Seashore seashore, String waterTemp, BeachForecast forecast,
-        String wavePeriod) {
+        String wavePeriod, String forcast) {
+
+        log.info("forecast Response for seashore {}", forcast);
+
         return SeashoreResponse.builder()
             .id(seashore.getId())
             .name(seashore.getName())

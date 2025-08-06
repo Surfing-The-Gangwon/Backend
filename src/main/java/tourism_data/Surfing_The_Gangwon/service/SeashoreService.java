@@ -2,6 +2,7 @@ package tourism_data.Surfing_The_Gangwon.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import lombok.extern.slf4j.Slf4j;
 import tourism_data.Surfing_The_Gangwon.Constants.Format;
 import tourism_data.Surfing_The_Gangwon.Constants.Time;
 import tourism_data.Surfing_The_Gangwon.Constants.Unit;
@@ -25,6 +26,7 @@ import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
 import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager;
 import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager.ApiKeyType;
 
+@Slf4j
 @Service
 public class SeashoreService {
     private final SeashoreRepository seashoreRepository;
@@ -36,12 +38,14 @@ public class SeashoreService {
     }
 
     public List<SeashoreResponse> getSeashoresByCity(Long cityId) {
+
         return seashoreRepository.findByCityId(cityId)
             .stream()
             .map((Seashore seashore) -> {
                 BeachForecastResponse forecastResponse = getBeachForecast(seashore.getBeachCode());
                 return SeashoreResponse.create(seashore, getWaterTemp(seashore.getBeachCode()),
-                    BeachForecast.create(forecastResponse), getWavePeriod(seashore.getBeachCode())
+                    BeachForecast.create(forecastResponse), getWavePeriod(seashore.getBeachCode()),
+                    getShortRangeForecast(seashore.getBeachCode())
                 );
             })
             .toList();
@@ -116,7 +120,7 @@ public class SeashoreService {
     // 단기 해상 예보 조회
     private String getShortRangeForecast(Integer beachCode) {
         var startDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
-        var endDateTime = LocalDateTime.now().plusDays(3).format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        var endDateTime = LocalDateTime.now().plusDays(2).format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
         var start = startDateTime.substring(0, 10);
         var end = endDateTime.substring(0, 10);
 
@@ -130,7 +134,9 @@ public class SeashoreService {
             .authKey(getApiHubAuthKey())
             .build();
 
-        return "";
+        var response = weatherClient.getShortRangeForecast(request);
+        log.info(response);
+        return response;
     }
 
     public static String getApiHubAuthKey() {
