@@ -11,6 +11,7 @@ import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
+import tourism_data.Surfing_The_Gangwon.dto.request.ShortRangeForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WavePeriodRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
@@ -18,6 +19,7 @@ import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WavePeriodResponse;
 import tourism_data.Surfing_The_Gangwon.entity.Seashore;
 import tourism_data.Surfing_The_Gangwon.integration.WeatherClient;
+import tourism_data.Surfing_The_Gangwon.mapper.BeachRegIdMapper;
 import tourism_data.Surfing_The_Gangwon.mapper.BeachStationMapper;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
 import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager;
@@ -109,6 +111,26 @@ public class SeashoreService {
 
         WavePeriodResponse response = WavePeriodResponse.create(weatherClient.getWavePeriod(request));
         return response.wp() + Unit.SECONDS;
+    }
+
+    // 단기 해상 예보 조회
+    private String getShortRangeForecast(Integer beachCode) {
+        var startDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        var endDateTime = LocalDateTime.now().plusDays(3).format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        var start = startDateTime.substring(0, 10);
+        var end = endDateTime.substring(0, 10);
+
+        var regId = BeachRegIdMapper.getRegId(String.valueOf(beachCode));
+        ShortRangeForecastRequest request = ShortRangeForecastRequest.builder()
+            .reg(regId)
+            .tmfc1(start)
+            .tmfc2(end)
+            .disp("0")
+            .help("0")
+            .authKey(getApiHubAuthKey())
+            .build();
+
+        return "";
     }
 
     public static String getApiHubAuthKey() {

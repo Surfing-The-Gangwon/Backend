@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * (파도 주기 요청 시 사용)
  * Seashore 엔티티의 beachCode 필드에 따른 해양 기상 관측지점 코드 매핑
  * 그러나 해변이 계속 늘어날 수록 수동적으로 값을 추가해줄 수 없기에 따로 DB 테이블로 분리 필요
  */
