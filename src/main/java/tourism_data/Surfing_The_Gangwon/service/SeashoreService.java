@@ -12,6 +12,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
+import tourism_data.Surfing_The_Gangwon.dto.request.WavePeriodRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 import tourism_data.Surfing_The_Gangwon.entity.Seashore;
@@ -34,7 +35,7 @@ public class SeashoreService {
             .map((Seashore seashore) -> {
                 BeachForecastResponse forecastResponse = getBeachForecast(seashore.getBeachCode());
                 return SeashoreResponse.create(seashore, getWaterTemp(seashore.getBeachCode()),
-                    BeachForecast.create(forecastResponse)
+                    BeachForecast.create(forecastResponse), getWavePeriod(seashore.getBeachCode())
                 );
             })
             .toList();
@@ -91,6 +92,14 @@ public class SeashoreService {
     }
 
     private String getWavePeriod(Integer beachCode) {
-        return "";
+        var searchTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        WavePeriodRequest request = WavePeriodRequest.builder()
+            .tm(searchTime)
+            .stn(0)
+            .help(0)
+            .authKey("0nCxR-PFQiSwsUfjxcIkZA")
+            .build();
+
+        return weatherClient.getWavePeriod(request);
     }
 }

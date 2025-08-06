@@ -8,11 +8,15 @@ import tourism_data.Surfing_The_Gangwon.Constants.URL.WEATHER;
 import tourism_data.Surfing_The_Gangwon.dto.request.BaseRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
+import tourism_data.Surfing_The_Gangwon.dto.request.WavePeriodRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Slf4j
 @Component
@@ -22,6 +26,26 @@ public class WeatherClient {
 
     public WeatherClient(WebClient webClient) {
         this.webClient = webClient;
+    }
+
+    public String getWavePeriod(WavePeriodRequest request) {
+        String fullUrl = String.format("%stm=%s&stn=%d&help=%d&authKey=%s",
+            WEATHER.WAVE_PERIOD,
+            request.tm(),
+            request.stn(),
+            request.help(),
+            request.authKey());
+        
+        log.info("API Request URL: {}", fullUrl);
+        
+        String csvResponse = webClient.get()
+            .uri(fullUrl)
+            .retrieve()
+            .bodyToMono(String.class)
+            .block();
+
+        log.info("Raw CSV Response: {}", csvResponse);
+        return csvResponse;
     }
 
     public WaterTempResponse getWeaterTemp(WaterTempRequest request) {

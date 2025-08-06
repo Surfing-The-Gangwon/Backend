@@ -9,6 +9,7 @@ public class Constants {
             public static final String BASE_URL = "https://apis.data.go.kr";
             public static final String WATER_TEMP = "/1360000/BeachInfoservice/getTwBuoyBeach";
             public static final String BEACH_FORECAST = "/1360000/BeachInfoservice/getVilageFcstBeach";
+            public static final String WAVE_PERIOD = "https://apihub.kma.go.kr/api/typ01/url/kma_buoy.php?";
         }
     }
 

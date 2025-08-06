@@ -14,7 +14,8 @@ public record SeashoreResponse(
     String windDir // 풍향
 ) {
 
-    public static SeashoreResponse create(Seashore seashore, String waterTemp, BeachForecast forecast) {
+    public static SeashoreResponse create(Seashore seashore, String waterTemp, BeachForecast forecast,
+        String wavePeriod) {
         // TODO
         return SeashoreResponse.builder()
             .id(seashore.getId())
