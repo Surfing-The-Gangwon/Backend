@@ -1,23 +1,14 @@
 package tourism_data.Surfing_The_Gangwon.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyForecastResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
 public class DailyForecastParser {
-
-    private final ObjectMapper objectMapper;
-
-    public DailyForecastParser(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public static List<DailyForecastResponse> parseWeatherData(String rawData) {
         List<DailyForecastResponse> weatherDataList = new ArrayList<>();
@@ -61,13 +52,12 @@ public class DailyForecastParser {
             String wf = extractQuotedString(line);
             
             return DailyForecastResponse.builder()
-                .tmfc(values[1])    // 발표시각
-                .tmef(values[2])    // 발효시각
-                .sky(values[14])    // 하늘상태
-                .w2(values[12])     // 풍향
-                .s2(values[13])     // 풍속
-                .wh2(values[16])    // 파고
-                .wf(wf)             // 예보
+                .tmef(values[2]) // 발효시각
+                .sky(values[16]) // 하늘상태
+                .w2(values[11]) // 풍향
+                .s2(values[13]) // 풍속
+                .wh2(values[15]) // 파고
+                .wf(wf) // 예보
                 .build();
         } catch (Exception e) {
             return null;
