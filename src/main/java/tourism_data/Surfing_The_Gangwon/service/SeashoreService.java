@@ -2,6 +2,7 @@ package tourism_data.Surfing_The_Gangwon.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import lombok.extern.slf4j.Slf4j;
 import tourism_data.Surfing_The_Gangwon.Constants.Format;
 import tourism_data.Surfing_The_Gangwon.Constants.Time;
 import tourism_data.Surfing_The_Gangwon.Constants.Unit;
@@ -11,13 +12,23 @@ import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
+import tourism_data.Surfing_The_Gangwon.dto.request.DailyForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
+import tourism_data.Surfing_The_Gangwon.dto.request.WavePeriodRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyForecastResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.WavePeriodResponse;
 import tourism_data.Surfing_The_Gangwon.entity.Seashore;
 import tourism_data.Surfing_The_Gangwon.integration.WeatherClient;
+import tourism_data.Surfing_The_Gangwon.mapper.BeachRegIdMapper;
+import tourism_data.Surfing_The_Gangwon.mapper.BeachStationMapper;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
+import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager;
+import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager.ApiKeyType;
+import tourism_data.Surfing_The_Gangwon.util.DailyForecastParser;
 
+@Slf4j
 @Service
 public class SeashoreService {
     private final SeashoreRepository seashoreRepository;
@@ -29,12 +40,13 @@ public class SeashoreService {
     }
 
     public List<SeashoreResponse> getSeashoresByCity(Long cityId) {
+
         return seashoreRepository.findByCityId(cityId)
             .stream()
             .map((Seashore seashore) -> {
                 BeachForecastResponse forecastResponse = getBeachForecast(seashore.getBeachCode());
                 return SeashoreResponse.create(seashore, getWaterTemp(seashore.getBeachCode()),
-                    BeachForecast.create(forecastResponse)
+                    BeachForecast.create(forecastResponse), getWavePeriod(seashore.getBeachCode())
                 );
             })
             .toList();
@@ -91,6 +103,43 @@ public class SeashoreService {
     }
 
     private String getWavePeriod(Integer beachCode) {
-        return "";
+        var searchTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        // 지역별 지점번호 변환값 (관측지점 코드 반환)
+        var stnCode = BeachStationMapper.getStationCode(String.valueOf(beachCode));
+
+        WavePeriodRequest request = WavePeriodRequest.builder()
+            .tm(searchTime)
+            .stn(stnCode)
+            .help(0)
+            .authKey(getApiHubAuthKey())
+            .build();
+
+        WavePeriodResponse response = WavePeriodResponse.create(weatherClient.getWavePeriod(request));
+        return response.wp() + Unit.SECONDS;
+    }
+
+    // 단기 해상 예보 조회
+    public List<DailyForecastResponse> getDailyRangeForecast(Long beachCode) {
+        var startDateTime = LocalDateTime.now().minusDays(1).format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        var endDateTime = LocalDateTime.now().plusDays(4).format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        var start = startDateTime.substring(0, 10);
+        var end = endDateTime.substring(0, 10);
+
+        var regId = BeachRegIdMapper.getRegId(String.valueOf(beachCode));
+        DailyForecastRequest request = DailyForecastRequest.builder()
+            .reg(regId)
+            .tmfc1(start)
+            .tmfc2(end)
+            .disp("0")
+            .help("0")
+            .authKey(getApiHubAuthKey())
+            .build();
+
+        var response = weatherClient.getDailyRangeForecast(request);
+        return DailyForecastParser.parseWeatherData(response);
+    }
+
+    public static String getApiHubAuthKey() {
+        return ApiKeyManager.getApiKey(ApiKeyType.HUB_API);
     }
 }
