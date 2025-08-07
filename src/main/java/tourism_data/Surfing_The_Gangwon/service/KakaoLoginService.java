@@ -2,6 +2,7 @@ package tourism_data.Surfing_The_Gangwon.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tourism_data.Surfing_The_Gangwon.dto.AccessTokenResponse;
 import tourism_data.Surfing_The_Gangwon.dto.KakaoTokenResponse;
 import tourism_data.Surfing_The_Gangwon.dto.KakaoUserInfo;
 import tourism_data.Surfing_The_Gangwon.entity.User;
@@ -31,5 +32,16 @@ public class KakaoLoginService {
         userRepository.save(user);
 
         return KakaoTokenResponse.create(user.getKakaoAccessToken(), user.getKakaoRefreshToken());
+    }
+
+    @Transactional
+    public AccessTokenResponse reissueAccessToken(String refreshToken) {
+        AccessTokenResponse response = kakaoAuthService.getAccessTokenByRefreshToken(refreshToken);
+        User user = userRepository.findByKakaoRefreshToken(refreshToken)
+            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        user.accessTokenUpdate(response.access_token());
+
+        return response;
     }
 }
