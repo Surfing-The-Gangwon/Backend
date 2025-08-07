@@ -1,32 +1,24 @@
 package tourism_data.Surfing_The_Gangwon.controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import tourism_data.Surfing_The_Gangwon.service.KakaoService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import tourism_data.Surfing_The_Gangwon.dto.KakaoTokenResponse;
+import tourism_data.Surfing_The_Gangwon.service.KakaoLoginService;
 
-@Controller
+@RestController
+@RequestMapping("/oauth")
 public class KakaoController {
+    private final KakaoLoginService kakaoLoginService;
 
-    private final KakaoService kakaoService;
-
-    public KakaoController(KakaoService kakaoService) {
-        this.kakaoService = kakaoService;
+    public KakaoController(KakaoLoginService kakaoLoginService) {
+        this.kakaoLoginService = kakaoLoginService;
     }
 
-    @GetMapping("/oauth/kakao/callback")
-    public String kakaoCallback(@RequestParam("code") String code, Model model) {
-        String accessToken = kakaoService.getAccessToken(code);
+    @GetMapping("/kakao/callback")
+    public ResponseEntity<KakaoTokenResponse> kakaoCallback(@RequestParam("code") String code) {
+        KakaoTokenResponse response = kakaoLoginService.kakaoLoginAndGetTokens(code);
 
-        System.out.println("Access Token: " + accessToken);
-
-        model.addAttribute("accessToken", accessToken);
-        return "accessToken";
-    }
-
-    @GetMapping("/kakao")
-    public String loginPage() {
-        return "login";
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
