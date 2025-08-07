@@ -16,6 +16,7 @@ import tourism_data.Surfing_The_Gangwon.dto.request.DailyForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WavePeriodRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyForecastResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WavePeriodResponse;
 import tourism_data.Surfing_The_Gangwon.entity.Seashore;
@@ -25,6 +26,7 @@ import tourism_data.Surfing_The_Gangwon.mapper.BeachStationMapper;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
 import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager;
 import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager.ApiKeyType;
+import tourism_data.Surfing_The_Gangwon.util.DailyForecastParser;
 
 @Slf4j
 @Service
@@ -44,8 +46,7 @@ public class SeashoreService {
             .map((Seashore seashore) -> {
                 BeachForecastResponse forecastResponse = getBeachForecast(seashore.getBeachCode());
                 return SeashoreResponse.create(seashore, getWaterTemp(seashore.getBeachCode()),
-                    BeachForecast.create(forecastResponse), getWavePeriod(seashore.getBeachCode()),
-                    getDailyRangeForecast(seashore.getBeachCode())
+                    BeachForecast.create(forecastResponse), getWavePeriod(seashore.getBeachCode())
                 );
             })
             .toList();
@@ -118,9 +119,9 @@ public class SeashoreService {
     }
 
     // 단기 해상 예보 조회
-    private String getDailyRangeForecast(Integer beachCode) {
-        var startDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
-        var endDateTime = LocalDateTime.now().plusDays(2).format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+    public List<DailyForecastResponse> getDailyRangeForecast(Long beachCode) {
+        var startDateTime = LocalDateTime.now().minusDays(1).format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        var endDateTime = LocalDateTime.now().plusDays(4).format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
         var start = startDateTime.substring(0, 10);
         var end = endDateTime.substring(0, 10);
 
@@ -135,8 +136,7 @@ public class SeashoreService {
             .build();
 
         var response = weatherClient.getDailyRangeForecast(request);
-        log.info(response);
-        return response;
+        return DailyForecastParser.parseWeatherData(response);
     }
 
     public static String getApiHubAuthKey() {

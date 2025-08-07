@@ -18,10 +18,7 @@ public record SeashoreResponse(
 ) {
 
     public static SeashoreResponse create(Seashore seashore, String waterTemp, BeachForecast forecast,
-        String wavePeriod, String forcast) {
-
-        log.info("forecast Response for seashore {}", forcast);
-
+        String wavePeriod) {
         return SeashoreResponse.builder()
             .id(seashore.getId())
             .name(seashore.getName())
