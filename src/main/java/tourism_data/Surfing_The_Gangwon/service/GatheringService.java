@@ -24,8 +24,8 @@ public class GatheringService {
         this.seashoreRepository = seashoreRepository;
     }
 
-    public void createGathering(Long userId, CreateGatheringRequest request, Long seashoreId) {
-        Seashore seashore = seashoreRepository.findById(seashoreId)
+    public void createGathering(Long userId, CreateGatheringRequest request) {
+        Seashore seashore = seashoreRepository.findByName(request.seashoreName())
             .orElseThrow(() -> new IllegalArgumentException("not found seashore"));
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("not found user"));

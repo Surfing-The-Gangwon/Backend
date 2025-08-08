@@ -24,8 +24,8 @@ public class GatheringController {
 
     @PostMapping("/{seashore_id}")
     public ResponseEntity<Void> createGathering(@AuthenticationPrincipal CustomUserDetails userDetails,
-        @RequestBody CreateGatheringRequest request, @PathVariable(name = "seashore_id") Long seashoreId) {
-        gatheringService.createGathering(userDetails.getId(), request, seashoreId);
+        @RequestBody CreateGatheringRequest request) {
+        gatheringService.createGathering(userDetails.getId(), request);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
