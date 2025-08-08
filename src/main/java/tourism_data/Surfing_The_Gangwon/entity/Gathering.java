@@ -104,4 +104,11 @@ public class Gathering {
     public void setDate() {
         this.date = LocalDateTime.now();
     }
+
+    public void addParticipant(User user) {
+        GatheringUser gu = GatheringUser.create(this, user);
+        participants.add(gu);
+        user.getJoinedGatherings().add(gu);
+        currentCount += 1;
+    }
 }

@@ -22,11 +22,21 @@ public class GatheringController {
         this.gatheringService = gatheringService;
     }
 
-    @PostMapping("/{seashore_id}")
+    @PostMapping
     public ResponseEntity<Void> createGathering(@AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestBody CreateGatheringRequest request) {
         gatheringService.createGathering(userDetails.getId(), request);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @PostMapping("/join/{gathering_id}")
+    public ResponseEntity<Void> joinGathering(@AuthenticationPrincipal CustomUserDetails userDetails,
+        @PathVariable(name = "gathering_id") Long gatheringId) {
+        gatheringService.joinGathering(userDetails.getId(), gatheringId);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    
 }

@@ -7,6 +7,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,9 +30,14 @@ public class GatheringUser {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public GatheringUser(Gathering gathering, User user) {
+    @Builder
+    private GatheringUser(Gathering gathering, User user) {
         this.gathering = gathering;
         this.user = user;
         this.id = new GatheringUserId(gathering.getId(), user.getId());
+    }
+
+    public static GatheringUser create(Gathering gathering, User user) {
+        return new GatheringUser(gathering, user);
     }
 }
