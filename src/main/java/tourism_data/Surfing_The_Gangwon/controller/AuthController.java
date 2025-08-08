@@ -9,11 +9,11 @@ import tourism_data.Surfing_The_Gangwon.service.KakaoLoginService;
 
 @RestController
 @RequestMapping("/oauth")
-public class KakaoController {
+public class AuthController {
 
     private final KakaoLoginService kakaoLoginService;
 
-    public KakaoController(KakaoLoginService kakaoLoginService) {
+    public AuthController(KakaoLoginService kakaoLoginService) {
         this.kakaoLoginService = kakaoLoginService;
     }
 
