@@ -102,6 +102,17 @@ public class GatheringService {
         gatheringRepository.save(gathering);
     }
 
+    public void deleteGathering(Long userId, Long gatheringId) {
+        User user = getUserById(userId);
+        Gathering gathering = getGatheringById(gatheringId);
+
+        if (user != gathering.getWriter()) {
+            throw new IllegalStateException("모집글 작성자가 아닙니다.");
+        }
+
+        gatheringRepository.delete(gathering);
+    }
+
     private User getUserById(Long userId) {
 
         return userRepository.findById(userId)
