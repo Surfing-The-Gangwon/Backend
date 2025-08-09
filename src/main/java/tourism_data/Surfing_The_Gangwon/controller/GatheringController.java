@@ -1,13 +1,18 @@
 package tourism_data.Surfing_The_Gangwon.controller;
 
+import java.time.LocalDate;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tourism_data.Surfing_The_Gangwon.dto.GatheringBySeashoreResponse;
 import tourism_data.Surfing_The_Gangwon.dto.request.CreateGatheringRequest;
 import tourism_data.Surfing_The_Gangwon.security.CustomUserDetails;
 import tourism_data.Surfing_The_Gangwon.service.GatheringService;
@@ -20,6 +25,16 @@ public class GatheringController {
 
     public GatheringController(GatheringService gatheringService) {
         this.gatheringService = gatheringService;
+    }
+
+    @GetMapping("/{seashore_id}")
+    public ResponseEntity<List<GatheringBySeashoreResponse>> getGatheringBySeashoreId(
+        @RequestParam(name = "date") LocalDate date,
+        @PathVariable(name = "seashore_id") Long seashoreId) {
+        List<GatheringBySeashoreResponse> responses = gatheringService.getGatheringBySeashoreId(date,
+            seashoreId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
     @PostMapping

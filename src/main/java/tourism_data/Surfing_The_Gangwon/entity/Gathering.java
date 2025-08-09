@@ -1,5 +1,6 @@
 package tourism_data.Surfing_The_Gangwon.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,11 +54,12 @@ public class Gathering {
     @Column(name = "maxCount", nullable = false)
     private int maxCount;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/seoul")
     @Column(name = "meetingTime", nullable = false)
     private LocalDateTime meetingTime;
 
     @Column(name = "date", nullable = false)
-    private LocalDateTime date;
+    private LocalDate date;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "level", nullable = false)
@@ -78,6 +81,7 @@ public class Gathering {
         this.contents = contents;
         this.phone = phone;
         this.maxCount = maxCount;
+        this.meetingTime = meetingTime;
         this.level = level;
         this.state = state;
     }
@@ -99,7 +103,7 @@ public class Gathering {
     }
 
     public void setDate() {
-        this.date = LocalDateTime.now();
+        this.date = LocalDate.now();
     }
 
     public void setStateClose() {

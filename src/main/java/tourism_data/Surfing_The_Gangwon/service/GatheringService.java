@@ -1,7 +1,11 @@
 package tourism_data.Surfing_The_Gangwon.service;
 
 import jakarta.transaction.Transactional;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.stereotype.Service;
+import tourism_data.Surfing_The_Gangwon.dto.GatheringBySeashoreResponse;
 import tourism_data.Surfing_The_Gangwon.dto.request.CreateGatheringRequest;
 import tourism_data.Surfing_The_Gangwon.entity.Gathering;
 import tourism_data.Surfing_The_Gangwon.entity.Participant;
@@ -27,6 +31,21 @@ public class GatheringService {
         this.gatheringRepository = gatheringRepository;
         this.participantRepository = participantRepository;
         this.seashoreRepository = seashoreRepository;
+    }
+
+    public List<GatheringBySeashoreResponse> getGatheringBySeashoreId(LocalDate date, Long seashoreId) {
+        List<Gathering> gatherings = gatheringRepository.findByDateAndSeashore_Id(date, seashoreId);
+        List<GatheringBySeashoreResponse> responses = new ArrayList<>();
+
+        for (Gathering gathering : gatherings) {
+            GatheringBySeashoreResponse response = GatheringBySeashoreResponse.create(gathering.getId(),
+                gathering.getTitle(), gathering.getContents(), gathering.getPhone(),
+                gathering.getCurrentCount(), gathering.getMaxCount(), gathering.getMeetingTime(),
+                gathering.getDate(), gathering.getLevel(), gathering.getState());
+            responses.add(response);
+        }
+
+        return responses;
     }
 
     public void createGathering(Long userId, CreateGatheringRequest request) {
