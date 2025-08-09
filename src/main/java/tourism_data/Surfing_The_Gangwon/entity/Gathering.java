@@ -34,9 +34,6 @@ public class Gathering {
     @JoinColumn(name = "user_id", nullable = false)
     private User writer;
 
-    @OneToMany(mappedBy = "gathering", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<GatheringUser> participants = new ArrayList<>();
-
     @Column(name = "seashore_id", nullable = false)
     private Seashore seashore;
 
@@ -105,10 +102,15 @@ public class Gathering {
         this.date = LocalDateTime.now();
     }
 
-    public void addParticipant(User user) {
-        GatheringUser gu = GatheringUser.create(this, user);
-        participants.add(gu);
-        user.getJoinedGatherings().add(gu);
-        currentCount += 1;
+    public void increaseCurrentCount() {
+        this.currentCount += 1;
+    }
+
+    public void decreaseCurrentCount() {
+        this.currentCount -= 1;
+    }
+
+    public boolean isFull() {
+        return currentCount >= maxCount;
     }
 }

@@ -38,5 +38,11 @@ public class GatheringController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    
+    @PostMapping("/cancel/{gathering_id}")
+    public ResponseEntity<Void> cancelGathering(@AuthenticationPrincipal CustomUserDetails userDetails,
+        @PathVariable(name = "gathering_id") Long gatheringId) {
+        gatheringService.cancelGathering(userDetails.getId(), gatheringId);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }

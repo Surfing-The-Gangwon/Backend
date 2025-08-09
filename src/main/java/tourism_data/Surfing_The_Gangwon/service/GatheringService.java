@@ -4,9 +4,11 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import tourism_data.Surfing_The_Gangwon.dto.request.CreateGatheringRequest;
 import tourism_data.Surfing_The_Gangwon.entity.Gathering;
+import tourism_data.Surfing_The_Gangwon.entity.Participant;
 import tourism_data.Surfing_The_Gangwon.entity.Seashore;
 import tourism_data.Surfing_The_Gangwon.entity.User;
 import tourism_data.Surfing_The_Gangwon.repository.GatheringRepository;
+import tourism_data.Surfing_The_Gangwon.repository.ParticipantRepository;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
 import tourism_data.Surfing_The_Gangwon.repository.UserRepository;
 import tourism_data.Surfing_The_Gangwon.status.STATE;
@@ -16,12 +18,14 @@ public class GatheringService {
 
     private final UserRepository userRepository;
     private final GatheringRepository gatheringRepository;
+    private final ParticipantRepository participantRepository;
     private final SeashoreRepository seashoreRepository;
 
     public GatheringService(UserRepository userRepository, GatheringRepository gatheringRepository,
-        SeashoreRepository seashoreRepository) {
+        ParticipantRepository participantRepository, SeashoreRepository seashoreRepository) {
         this.userRepository = userRepository;
         this.gatheringRepository = gatheringRepository;
+        this.participantRepository = participantRepository;
         this.seashoreRepository = seashoreRepository;
     }
 
@@ -42,18 +46,28 @@ public class GatheringService {
         User user = getUserById(userId);
         Gathering gathering = getGatheringById(gatheringId);
 
-        if (gathering.getCurrentCount() >= gathering.getMaxCount()) {
+        if (gathering.isFull()) {
             throw new IllegalStateException("모집이 마감되었습니다.");
         }
-
-        boolean alreadyJoined = gathering.getParticipants().stream()
-            .anyMatch(gu -> gu.getUser().equals(user));
-        if (alreadyJoined) {
+        if (participantRepository.existsByUser_IdAndGathering_Id(userId, gatheringId)) {
             throw new IllegalStateException("이미 참여한 모집글입니다.");
         }
 
-        gathering.addParticipant(user);
-        gatheringRepository.save(gathering);
+        gathering.increaseCurrentCount();
+        Participant participant = Participant.create(user, gathering);
+
+        participantRepository.save(participant);
+    }
+
+    @Transactional
+    public void cancelGathering(Long userId, Long gatheringId) {
+        Gathering gathering = getGatheringById(gatheringId);
+
+        Participant participant = participantRepository.findByUser_IdAndGathering_Id(userId, gatheringId)
+                .orElseThrow(() -> new IllegalArgumentException("참여한 모집글이 아닙니다."));
+        gathering.decreaseCurrentCount();
+
+        participantRepository.delete(participant);
     }
 
     private User getUserById(Long userId) {

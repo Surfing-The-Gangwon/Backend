@@ -24,9 +24,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<GatheringUser> joinedGatherings = new ArrayList<>();
-
     @Column(name = "kakao_id", nullable = false)
     private String kakaoId;
 
