@@ -102,6 +102,10 @@ public class Gathering {
         this.date = LocalDateTime.now();
     }
 
+    public void setStateClose() {
+        this.state = STATE.CLOSE;
+    }
+
     public void increaseCurrentCount() {
         this.currentCount += 1;
     }

@@ -46,7 +46,7 @@ public class GatheringService {
         User user = getUserById(userId);
         Gathering gathering = getGatheringById(gatheringId);
 
-        if (gathering.isFull()) {
+        if (gathering.isFull() || gathering.getState().equals(STATE.CLOSE)) {
             throw new IllegalStateException("모집이 마감되었습니다.");
         }
         if (participantRepository.existsByUser_IdAndGathering_Id(userId, gatheringId)) {
@@ -64,10 +64,23 @@ public class GatheringService {
         Gathering gathering = getGatheringById(gatheringId);
 
         Participant participant = participantRepository.findByUser_IdAndGathering_Id(userId, gatheringId)
-                .orElseThrow(() -> new IllegalArgumentException("참여한 모집글이 아닙니다."));
+            .orElseThrow(() -> new IllegalArgumentException("참여한 모집글이 아닙니다."));
         gathering.decreaseCurrentCount();
 
         participantRepository.delete(participant);
+    }
+
+    @Transactional
+    public void closeGathering(Long userId, Long gatheringId) {
+        User user = getUserById(userId);
+        Gathering gathering = getGatheringById(gatheringId);
+
+        if (user != gathering.getWriter()) {
+            throw new IllegalStateException("모집글 작성자가 아닙니다.");
+        }
+
+        gathering.setStateClose();
+        gatheringRepository.save(gathering);
     }
 
     private User getUserById(Long userId) {
