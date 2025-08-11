@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tourism_data.Surfing_The_Gangwon.dto.MarkerInfo;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreDetailResponse;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyForecastResponse;
@@ -36,6 +37,12 @@ public class SeashoreController {
     @GetMapping("/seashores/{beach_code}/forecasts")
     public ResponseEntity<List<DailyForecastResponse>> getDailyForecasts(@PathVariable(name = "beach_code") Long beachCode) {
         var response = seashoreService.getDailyRangeForecast(beachCode);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/seashores/{seashore_id}/markers")
+    public ResponseEntity<List<MarkerInfo>> getMarkersBySeashore(@PathVariable(name = "seashore_id") Long seashoreId) {
+        var response = seashoreService.getMarkersBySeashore(seashoreId);
         return ResponseEntity.ok(response);
     }
 }

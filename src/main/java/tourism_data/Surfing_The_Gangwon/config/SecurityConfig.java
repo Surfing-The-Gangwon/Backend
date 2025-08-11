@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.reactive.function.client.WebClient;
+import tourism_data.Surfing_The_Gangwon.Constants.URL;
+import tourism_data.Surfing_The_Gangwon.Constants.URL.WEATHER;
 
 @Configuration
 public class SecurityConfig {
@@ -16,7 +19,7 @@ public class SecurityConfig {
             .formLogin(form -> form.disable());
         return http.build();
     }
-    
+
     @Bean
     public WebClient webClient() {
         return WebClient.builder()
