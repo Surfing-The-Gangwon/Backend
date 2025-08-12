@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import lombok.extern.slf4j.Slf4j;
 import tourism_data.Surfing_The_Gangwon.Constants.Format;
+import tourism_data.Surfing_The_Gangwon.Constants.MarkerType;
 import tourism_data.Surfing_The_Gangwon.Constants.Time;
 import tourism_data.Surfing_The_Gangwon.Constants.Unit;
 import tourism_data.Surfing_The_Gangwon.dto.BeachForecast;
@@ -73,7 +74,20 @@ public class SeashoreService {
     public SeashoreDetailResponse getSeashoreById(Long seashoreId) {
         Seashore seashoreEntity = seashoreRepository.findById(seashoreId)
             .orElseThrow(() -> new RuntimeException("seashore not found"));
-        return SeashoreDetailResponse.create(seashoreEntity);
+
+        // 특정 해변의 마커만 조회 (가장 정확한 방법)
+        List<Marker> markers = markerRepository.findBySeashoreId(seashoreId);
+
+        // BEACH 타입 마커를 필터링
+        Marker selectedMarker = markers.stream()
+            .filter(m -> MarkerType.BEACH.equals(m.getType()))
+            .findFirst()
+            .orElse(markers.isEmpty() ? null : markers.getFirst());
+        
+        Double latitude = selectedMarker != null ? selectedMarker.getLatitude() : null;
+        Double longitude = selectedMarker != null ? selectedMarker.getLongitude() : null;
+
+        return SeashoreDetailResponse.create(seashoreEntity, latitude, longitude);
     }
 
     private String getWaterTemp(Integer beachCode) {
