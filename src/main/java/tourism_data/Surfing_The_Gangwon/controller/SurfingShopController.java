@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import tourism_data.Surfing_The_Gangwon.dto.LessonDto;
 import tourism_data.Surfing_The_Gangwon.dto.response.shop.SurfingShopInfoResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse.Response;
 import tourism_data.Surfing_The_Gangwon.service.SurfingShopService;
@@ -25,6 +26,9 @@ public class SurfingShopController {
         this.surfingShopService = surfingShopService;
     }
 
+    /**
+     * 서핑샵 정보 조회
+     */
     @GetMapping("/{shop_id}")
     public ResponseEntity<SurfingShopInfoResponse> getSurfingMarkerInfo(@PathVariable("shop_id") Long shopId) {
         var response = surfingShopService.getSurfingMarkerInfo(shopId);
@@ -41,5 +45,15 @@ public class SurfingShopController {
         surfingShopService.registerSurfingShopImg(shopId, images);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    /**
+     * 수강 항목별 수강료에 대한 정보들 반환
+     */
+    @GetMapping("{shop_id}/lesson")
+    public ResponseEntity<List<LessonDto>> getLessonInfo(@PathVariable("shop_id") Long shopId) {
+        var response = surfingShopService.getLessonInfo(shopId);
+        return ResponseEntity.ok(response);
+    }
+
 
 }

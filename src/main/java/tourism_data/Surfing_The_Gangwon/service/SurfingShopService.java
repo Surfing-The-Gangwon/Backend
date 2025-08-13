@@ -4,10 +4,13 @@ import java.util.Collections;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import tourism_data.Surfing_The_Gangwon.dto.LessonDto;
 import tourism_data.Surfing_The_Gangwon.dto.response.shop.SurfingShopInfoResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.shop.SurfingShopInfoResponse.ShopImage;
+import tourism_data.Surfing_The_Gangwon.entity.Lesson;
 import tourism_data.Surfing_The_Gangwon.entity.SurfingShop;
 import tourism_data.Surfing_The_Gangwon.entity.SurfingShopPicture;
+import tourism_data.Surfing_The_Gangwon.repository.LessonRepository;
 import tourism_data.Surfing_The_Gangwon.repository.SurfingShopRepository;
 import tourism_data.Surfing_The_Gangwon.repository.SurfingShopPictureRepository;
 
@@ -15,10 +18,13 @@ import tourism_data.Surfing_The_Gangwon.repository.SurfingShopPictureRepository;
 public class SurfingShopService {
     private final SurfingShopRepository surfingShopRepository;
     private final SurfingShopPictureRepository surfingShopPictureRepository;
+    private final LessonRepository lessonRepository;
 
-    public SurfingShopService(SurfingShopRepository surfingShopRepository, SurfingShopPictureRepository surfingShopPictureRepository) {
+    public SurfingShopService(SurfingShopRepository surfingShopRepository, SurfingShopPictureRepository surfingShopPictureRepository,
+        LessonRepository lessonRepository) {
         this.surfingShopRepository = surfingShopRepository;
         this.surfingShopPictureRepository = surfingShopPictureRepository;
+        this.lessonRepository = lessonRepository;
     }
 
     public SurfingShopInfoResponse getSurfingMarkerInfo(Long shopId) {
@@ -58,5 +64,12 @@ public class SurfingShopService {
     private SurfingShop getSurfingShop(Long shopId) {
         return surfingShopRepository.findByShopId(shopId)
             .orElseThrow(() -> new RuntimeException("SHOP IS NOT FOUND"));
+    }
+
+    public List<LessonDto> getLessonInfo(Long shopId) {
+        return lessonRepository.findByShopShopId(shopId)
+            .stream()
+            .map(LessonDto::create)
+            .toList();
     }
 }
