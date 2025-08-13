@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import tourism_data.Surfing_The_Gangwon.dto.LessonDto;
+import tourism_data.Surfing_The_Gangwon.dto.RentalDto;
 import tourism_data.Surfing_The_Gangwon.dto.response.shop.SurfingShopInfoResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse.Response;
 import tourism_data.Surfing_The_Gangwon.service.SurfingShopService;
@@ -55,5 +56,9 @@ public class SurfingShopController {
         return ResponseEntity.ok(response);
     }
 
-
+    @GetMapping("{shop_id}/rental")
+    public ResponseEntity<List<RentalDto>> getRentalInfo(@PathVariable("shop_id") Long shopId) {
+        var response = surfingShopService.getRentalInfo(shopId);
+        return ResponseEntity.ok(response);
+    }
 }

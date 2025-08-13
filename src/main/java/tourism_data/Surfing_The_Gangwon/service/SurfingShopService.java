@@ -5,12 +5,13 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tourism_data.Surfing_The_Gangwon.dto.LessonDto;
+import tourism_data.Surfing_The_Gangwon.dto.RentalDto;
 import tourism_data.Surfing_The_Gangwon.dto.response.shop.SurfingShopInfoResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.shop.SurfingShopInfoResponse.ShopImage;
-import tourism_data.Surfing_The_Gangwon.entity.Lesson;
 import tourism_data.Surfing_The_Gangwon.entity.SurfingShop;
 import tourism_data.Surfing_The_Gangwon.entity.SurfingShopPicture;
 import tourism_data.Surfing_The_Gangwon.repository.LessonRepository;
+import tourism_data.Surfing_The_Gangwon.repository.RentalRepository;
 import tourism_data.Surfing_The_Gangwon.repository.SurfingShopRepository;
 import tourism_data.Surfing_The_Gangwon.repository.SurfingShopPictureRepository;
 
@@ -19,12 +20,14 @@ public class SurfingShopService {
     private final SurfingShopRepository surfingShopRepository;
     private final SurfingShopPictureRepository surfingShopPictureRepository;
     private final LessonRepository lessonRepository;
+    private final RentalRepository rentalRepository;
 
     public SurfingShopService(SurfingShopRepository surfingShopRepository, SurfingShopPictureRepository surfingShopPictureRepository,
-        LessonRepository lessonRepository) {
+        LessonRepository lessonRepository, RentalRepository rentalRepository) {
         this.surfingShopRepository = surfingShopRepository;
         this.surfingShopPictureRepository = surfingShopPictureRepository;
         this.lessonRepository = lessonRepository;
+        this.rentalRepository = rentalRepository;
     }
 
     public SurfingShopInfoResponse getSurfingMarkerInfo(Long shopId) {
@@ -70,6 +73,13 @@ public class SurfingShopService {
         return lessonRepository.findByShopShopId(shopId)
             .stream()
             .map(LessonDto::create)
+            .toList();
+    }
+
+    public List<RentalDto> getRentalInfo(Long shopId) {
+        return rentalRepository.findByShopShopId(shopId)
+            .stream()
+            .map(RentalDto::create)
             .toList();
     }
 }

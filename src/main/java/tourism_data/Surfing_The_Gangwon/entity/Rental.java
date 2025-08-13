@@ -13,7 +13,7 @@ import lombok.Getter;
 @Getter
 @Entity
 @Table(name = "RENTAL_PRICING_TB")
-public class RentalPricing {
+public class Rental {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
