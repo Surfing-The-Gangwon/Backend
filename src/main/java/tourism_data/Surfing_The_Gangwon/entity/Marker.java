@@ -18,7 +18,7 @@ public class Marker {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "marker_id", nullable = false)
-    private Long id;
+    private Long markerId;
 
     @Column(nullable = false)
     private Double latitude;

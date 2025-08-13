@@ -26,4 +26,11 @@ public class SurfingShopPicture {
     @ManyToOne
     @JoinColumn(name = "shop_id", nullable = false)
     private SurfingShop shop;
+
+    public SurfingShopPicture(String imgUrl, SurfingShop shop) {
+        this.imgUrl = imgUrl;
+        this.shop = shop;
+    }
+
+    public SurfingShopPicture() {}
 }

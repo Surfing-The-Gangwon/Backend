@@ -18,7 +18,7 @@ public class SurfingShop {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "shop_id", nullable = false)
-    private Long id;
+    private Long shopId;
 
     @Column(name = "name", nullable = false)
     private String name;
