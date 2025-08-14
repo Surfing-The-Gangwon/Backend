@@ -21,13 +21,16 @@ public class SurfingShopService {
     private final SurfingShopPictureRepository surfingShopPictureRepository;
     private final LessonRepository lessonRepository;
     private final RentalRepository rentalRepository;
+    private final ImageStorageService imageStorageService;
 
     public SurfingShopService(SurfingShopRepository surfingShopRepository, SurfingShopPictureRepository surfingShopPictureRepository,
-        LessonRepository lessonRepository, RentalRepository rentalRepository) {
+        LessonRepository lessonRepository, RentalRepository rentalRepository,
+        ImageStorageService imageStorageService) {
         this.surfingShopRepository = surfingShopRepository;
         this.surfingShopPictureRepository = surfingShopPictureRepository;
         this.lessonRepository = lessonRepository;
         this.rentalRepository = rentalRepository;
+        this.imageStorageService = imageStorageService;
     }
 
     public SurfingShopInfoResponse getSurfingMarkerInfo(Long shopId) {
@@ -58,7 +61,7 @@ public class SurfingShopService {
         }
 
         for (MultipartFile img : images) {
-            String imgUrl = img.getOriginalFilename();
+            String imgUrl = imageStorageService.uploadImage(img);
             SurfingShopPicture picture = new SurfingShopPicture(imgUrl, surfingShop);
             surfingShopPictureRepository.save(picture);
         }
@@ -66,7 +69,7 @@ public class SurfingShopService {
 
     private SurfingShop getSurfingShop(Long shopId) {
         return surfingShopRepository.findByShopId(shopId)
-            .orElseThrow(() -> new RuntimeException("SHOP IS NOT FOUND"));
+            .orElseThrow(() -> new RuntimeException("SURFING SHOP IS NOT FOUND"));
     }
 
     public List<LessonDto> getLessonInfo(Long shopId) {
