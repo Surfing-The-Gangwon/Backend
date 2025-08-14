@@ -10,4 +10,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByKakaoId(String kakaoId);
     Optional<User> findByKakaoRefreshToken(String kakaoRefreshToken);
+    Optional<User> findByKakaoAccessToken(String kakaoAccessToken);
 }

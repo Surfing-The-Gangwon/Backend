@@ -14,6 +14,7 @@ import lombok.Getter;
 @Getter
 @Table(name = "SEASHORE_TB")
 public class Seashore {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "seashore_id", nullable = false)
