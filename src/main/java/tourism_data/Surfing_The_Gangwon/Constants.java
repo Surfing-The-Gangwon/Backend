@@ -37,4 +37,10 @@ public class Constants {
         public static final String SECONDS = "S";
         public static final String METER = "M";
     }
+
+    public static class MarkerType {
+        public static final String BEACH = "해변";
+        public static final String SURFING_SHOP = "서핑샵";
+        public static final String SURFING_SCHOOL = "서핑스쿨";
+    }
 }

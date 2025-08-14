@@ -12,11 +12,13 @@ public record SeashoreDetailResponse(
     Double longitude // TODO
 ) {
 
-    public static SeashoreDetailResponse create(Seashore seashore) {
+    public static SeashoreDetailResponse create(Seashore seashore, Double latitude, Double longitude) {
         return SeashoreDetailResponse.builder()
             .name(seashore.getName())
             .address(seashore.getAddress())
             .telephone(seashore.getPhone())
+            .latitude(latitude)
+            .longitude(longitude)
             .build();
     }
 }

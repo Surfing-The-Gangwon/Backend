@@ -4,9 +4,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import lombok.extern.slf4j.Slf4j;
 import tourism_data.Surfing_The_Gangwon.Constants.Format;
+import tourism_data.Surfing_The_Gangwon.Constants.MarkerType;
 import tourism_data.Surfing_The_Gangwon.Constants.Time;
 import tourism_data.Surfing_The_Gangwon.Constants.Unit;
 import tourism_data.Surfing_The_Gangwon.dto.BeachForecast;
+import tourism_data.Surfing_The_Gangwon.dto.MarkerInfo;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreDetailResponse;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
 import java.util.List;
@@ -19,10 +21,12 @@ import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastRespon
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyForecastResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WavePeriodResponse;
+import tourism_data.Surfing_The_Gangwon.entity.Marker;
 import tourism_data.Surfing_The_Gangwon.entity.Seashore;
 import tourism_data.Surfing_The_Gangwon.integration.WeatherClient;
 import tourism_data.Surfing_The_Gangwon.mapper.BeachRegIdMapper;
 import tourism_data.Surfing_The_Gangwon.mapper.BeachStationMapper;
+import tourism_data.Surfing_The_Gangwon.repository.MarkerRepository;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
 import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager;
 import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager.ApiKeyType;
@@ -32,11 +36,26 @@ import tourism_data.Surfing_The_Gangwon.util.DailyForecastParser;
 @Service
 public class SeashoreService {
     private final SeashoreRepository seashoreRepository;
+    private final MarkerRepository markerRepository;
     private final WeatherClient weatherClient;
 
-    public SeashoreService(SeashoreRepository seashoreRepository, WeatherClient weatherClient) {
+    public SeashoreService(SeashoreRepository seashoreRepository, MarkerRepository markerRepository,
+        WeatherClient weatherClient) {
         this.seashoreRepository = seashoreRepository;
+        this.markerRepository = markerRepository;
         this.weatherClient = weatherClient;
+    }
+
+    public List<MarkerInfo> getMarkersBySeashore(Long seashoreId) {
+        return markerRepository.findBySeashoreId(seashoreId).stream()
+            .map(marker -> MarkerInfo.builder()
+                    .type(marker.getType())
+                    .latitude(marker.getLatitude())
+                    .longitude(marker.getLongitude())
+                    .name(marker.getName())
+                    .build()
+            )
+            .toList();
     }
 
     public List<SeashoreResponse> getSeashoresByCity(Long cityId) {
@@ -55,7 +74,20 @@ public class SeashoreService {
     public SeashoreDetailResponse getSeashoreById(Long seashoreId) {
         Seashore seashoreEntity = seashoreRepository.findById(seashoreId)
             .orElseThrow(() -> new RuntimeException("seashore not found"));
-        return SeashoreDetailResponse.create(seashoreEntity);
+
+        // 특정 해변의 마커만 조회 (가장 정확한 방법)
+        List<Marker> markers = markerRepository.findBySeashoreId(seashoreId);
+
+        // BEACH 타입 마커를 필터링
+        Marker selectedMarker = markers.stream()
+            .filter(m -> MarkerType.BEACH.equals(m.getType()))
+            .findFirst()
+            .orElse(markers.isEmpty() ? null : markers.getFirst());
+        
+        Double latitude = selectedMarker != null ? selectedMarker.getLatitude() : null;
+        Double longitude = selectedMarker != null ? selectedMarker.getLongitude() : null;
+
+        return SeashoreDetailResponse.create(seashoreEntity, latitude, longitude);
     }
 
     private String getWaterTemp(Integer beachCode) {

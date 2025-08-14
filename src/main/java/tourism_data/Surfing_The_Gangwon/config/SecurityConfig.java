@@ -31,7 +31,7 @@ public class SecurityConfig {
 
         return http.build();
     }
-    
+
     @Bean
     public WebClient webClient() {
         return WebClient.builder()
