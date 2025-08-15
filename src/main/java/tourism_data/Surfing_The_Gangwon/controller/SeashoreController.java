@@ -45,4 +45,10 @@ public class SeashoreController {
         var response = seashoreService.getMarkersBySeashore(seashoreId);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/seashores/{seashore_id}/uv")
+    public ResponseEntity<String> getUv(@PathVariable(name = "seashore_id") Long seashoreId) {
+        var response = seashoreService.getUVForecast(seashoreId);
+        return ResponseEntity.ok(response);
+    }
 }

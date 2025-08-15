@@ -15,10 +15,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.DailyForecastRequest;
+import tourism_data.Surfing_The_Gangwon.dto.request.UVRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WavePeriodRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyForecastResponse;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.UVResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WavePeriodResponse;
 import tourism_data.Surfing_The_Gangwon.entity.Marker;
@@ -26,6 +28,7 @@ import tourism_data.Surfing_The_Gangwon.entity.Seashore;
 import tourism_data.Surfing_The_Gangwon.integration.WeatherClient;
 import tourism_data.Surfing_The_Gangwon.mapper.BeachRegIdMapper;
 import tourism_data.Surfing_The_Gangwon.mapper.BeachStationMapper;
+import tourism_data.Surfing_The_Gangwon.mapper.CityMapper;
 import tourism_data.Surfing_The_Gangwon.repository.MarkerRepository;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
 import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager;
@@ -150,6 +153,25 @@ public class SeashoreService {
         return response.wp() + Unit.SECONDS;
     }
 
+    // 자외선 지수 조회
+    public String getUVForecast(Long seashoreId) {
+        Seashore seashoreEntity = seashoreRepository.findById(seashoreId)
+            .orElseThrow(() -> new RuntimeException("seashore not found"));
+
+        var dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        var areaNo = CityMapper.getAreaNo(String.valueOf(seashoreEntity.getBeachCode()));
+        var searchTime = dateTime.substring(0, 10);
+
+        UVRequest request = UVRequest.builder()
+            .areaNo(areaNo)
+            .time(searchTime)
+            .build();
+
+        UVResponse response = weatherClient.getUVForecast(request);
+        var items = response.response().body.items.item;
+        return items.isEmpty() ? "" : items.getFirst().uvResult;
+    }
+
     // 단기 해상 예보 조회
     public List<DailyForecastResponse> getDailyRangeForecast(Long beachCode) {
         var startDateTime = LocalDateTime.now().minusDays(1).format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
@@ -170,6 +192,7 @@ public class SeashoreService {
         var response = weatherClient.getDailyRangeForecast(request);
         return DailyForecastParser.parseWeatherData(response);
     }
+
 
     public static String getApiHubAuthKey() {
         return ApiKeyManager.getApiKey(ApiKeyType.HUB_API);
