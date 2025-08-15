@@ -12,27 +12,25 @@ import lombok.Getter;
 
 @Getter
 @Entity
-@Table(name = "MARKER_TB")
-public class Marker {
+@Table(name = "SURFING_SHOP_PICTURE_TB")
+public class SurfingShopPicture {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "marker_id", nullable = false)
-    private Long markerId;
+    @Column(name = "picture_id", nullable = false)
+    private Long pictureId;
 
-    @Column(nullable = false)
-    private Double latitude;
-
-    @Column(nullable = false)
-    private Double longitude;
-
-    @Column(nullable = false)
-    private String type;
-
-    @Column(nullable = false)
-    private String name; // 시설 이름
+    @Column(name = "imgUrl")
+    private String imgUrl;
 
     @ManyToOne
-    @JoinColumn(name = "seashore_id", nullable = false)
-    private Seashore seashore;
+    @JoinColumn(name = "shop_id", nullable = false)
+    private SurfingShop shop;
+
+    public SurfingShopPicture(String imgUrl, SurfingShop shop) {
+        this.imgUrl = imgUrl;
+        this.shop = shop;
+    }
+
+    public SurfingShopPicture() {}
 }
