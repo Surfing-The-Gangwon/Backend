@@ -1,5 +1,6 @@
 package tourism_data.Surfing_The_Gangwon.integration;
 
+import java.net.URI;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -9,9 +10,11 @@ import tourism_data.Surfing_The_Gangwon.Constants.URL.WEATHER;
 import tourism_data.Surfing_The_Gangwon.dto.request.BaseRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.DailyForecastRequest;
+import tourism_data.Surfing_The_Gangwon.dto.request.UVRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WavePeriodRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.UVResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 
 import java.nio.charset.StandardCharsets;
@@ -60,28 +63,32 @@ public class WeatherClient {
             .block();
     }
 
-    public WaterTempResponse getWeaterTemp(WaterTempRequest request) {
-        // 먼저 String으로 응답을 받아서 로깅
-//        String rawResponse = webClient.get()
-//                .uri(uriBuilder -> {
-//                    URI uri = uriBuilder
-//                            .path(WEATHER.WATER_TEMP)
-//                            .queryParam(BaseRequest.SERVICE_KEY, UriUtils.decode(request.getServiceKey(), StandardCharsets.UTF_8))
-//                            .queryParam(BaseRequest.PAGE_NO, request.getPageNo())
-//                            .queryParam(BaseRequest.NUM_OF_ROWS, request.getNumOfRows())
-//                            .queryParam(BaseRequest.DATA_TYPE, request.getDataType())
-//                            .queryParam(BaseRequest.BEACH_NUM, request.getBeachNum())
-//                            .queryParam(WaterTempRequest.SEARCH_TIME, request.getSearchTime())
-//                            .build();
-//                    log.info("API Request URL: {}", uri);
-//                    return uri;
-//                })
-//                .retrieve()
-//                .bodyToMono(String.class)
-//                .block();
-//
-//        log.info("Raw API Response: {}", rawResponse);
+    public UVResponse getUVForecast(UVRequest request) {
+        UVResponse response = webClient.get()
+            .uri(uriBuilder -> {
+                return uriBuilder
+                    .path(WEATHER.UV_FORECAST)
+                    .queryParam(BaseRequest.SERVICE_KEY, UriUtils.decode(BaseRequest.getServiceKey(), StandardCharsets.UTF_8))
+                    .queryParam(BaseRequest.PAGE_NO, request.getPageNo())
+                    .queryParam(BaseRequest.NUM_OF_ROWS, request.getNumOfRows())
+                    .queryParam(BaseRequest.DATA_TYPE, request.getDataType())
+                    .queryParam(UVRequest.AREA_NO, request.getAreaNo())
+                    .queryParam(UVRequest.TIME, request.getTime())
+                    .build();
+            })
+            .retrieve()
+            .bodyToMono(UVResponse.class)
+            .timeout(Duration.ofSeconds(30))
+            .block();
 
+        if (response == null) {
+            throw new IllegalStateException("Empty response from Weather API");
+        }
+
+        return response;
+    }
+
+    public WaterTempResponse getWeaterTemp(WaterTempRequest request) {
         // 이제 WaterTempResponse로 파싱
         WaterTempResponse response = webClient.get()
                 .uri(uriBuilder -> {
