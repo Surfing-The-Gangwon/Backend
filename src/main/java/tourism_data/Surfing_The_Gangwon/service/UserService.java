@@ -3,10 +3,13 @@ package tourism_data.Surfing_The_Gangwon.service;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import tourism_data.Surfing_The_Gangwon.dto.ReservedPostResponse;
 import tourism_data.Surfing_The_Gangwon.dto.WrittenPostResponse;
 import tourism_data.Surfing_The_Gangwon.entity.Gathering;
+import tourism_data.Surfing_The_Gangwon.entity.Participant;
 import tourism_data.Surfing_The_Gangwon.entity.User;
 import tourism_data.Surfing_The_Gangwon.repository.GatheringRepository;
+import tourism_data.Surfing_The_Gangwon.repository.ParticipantRepository;
 import tourism_data.Surfing_The_Gangwon.repository.UserRepository;
 
 @Service
@@ -14,10 +17,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final GatheringRepository gatheringRepository;
+    private final ParticipantRepository participantRepository;
 
-    public UserService(UserRepository userRepository, GatheringRepository gatheringRepository) {
+    public UserService(UserRepository userRepository, GatheringRepository gatheringRepository,
+        ParticipantRepository participantRepository) {
         this.userRepository = userRepository;
         this.gatheringRepository = gatheringRepository;
+        this.participantRepository = participantRepository;
     }
 
     public List<WrittenPostResponse> getWrittenPost(Long userId) {
@@ -34,6 +40,25 @@ public class UserService {
         }
 
         return responses;
+    }
+
+    public List<ReservedPostResponse> getReservedPost(Long userId) {
+        User user = getUserById(userId);
+        List<Participant> participantList = participantRepository.findByUser(user);
+        List<ReservedPostResponse> responses = new ArrayList<>();
+
+        for (Participant participant : participantList) {
+            Gathering gathering = gatheringRepository.findById(participant.getGathering().getId())
+                .orElseThrow(() -> new IllegalArgumentException("참여신청을 한 모집글이 없습니다."));
+
+            ReservedPostResponse response = ReservedPostResponse.create(gathering.getId(),
+                gathering.getTitle(), gathering.getContents(), gathering.getPhone(),
+                gathering.getCurrentCount(), gathering.getMaxCount(), gathering.getMeetingTime(),
+                gathering.getDate(), gathering.getLevel(), gathering.getState());
+            responses.add(response);
+        }
+
+        return  responses;
     }
 
     private User getUserById(Long userId) {
