@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import tourism_data.Surfing_The_Gangwon.dto.GatheringBySeashoreResponse;
 import tourism_data.Surfing_The_Gangwon.dto.request.CreateGatheringRequest;
@@ -15,6 +16,7 @@ import tourism_data.Surfing_The_Gangwon.repository.GatheringRepository;
 import tourism_data.Surfing_The_Gangwon.repository.ParticipantRepository;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
 import tourism_data.Surfing_The_Gangwon.repository.UserRepository;
+import tourism_data.Surfing_The_Gangwon.status.RSV_STATUS;
 import tourism_data.Surfing_The_Gangwon.status.STATE;
 
 @Service
@@ -65,28 +67,53 @@ public class GatheringService {
         User user = getUserById(userId);
         Gathering gathering = getGatheringById(gatheringId);
 
-        if (gathering.isFull() || gathering.getState().equals(STATE.CLOSE)) {
+        if (gathering.getState() == STATE.CLOSE) {
             throw new IllegalStateException("모집이 마감되었습니다.");
         }
-        if (participantRepository.existsByUser_IdAndGathering_Id(userId, gatheringId)) {
-            throw new IllegalStateException("이미 참여한 모집글입니다.");
+
+        Optional<Participant> existingOpt = participantRepository.findByUserAndGathering(user, gathering);
+
+        if (existingOpt.isPresent()) {
+            Participant participant = existingOpt.get();
+
+            if (participant.getRsvStatus() == RSV_STATUS.CANCELED) {
+                if (gathering.isFull()) {
+                    throw new IllegalStateException("모집이 마감되었습니다.");
+                }
+                participant.setRsvStatus(RSV_STATUS.RESERVED);
+                participant.setDate();
+                gathering.increaseCurrentCount();
+
+                participantRepository.save(participant);
+            } else {
+                throw new IllegalStateException("이미 참여한 모집글입니다.");
+            }
+
+        } else {
+            if (gathering.isFull()) {
+                throw new IllegalStateException("모집이 마감되었습니다.");
+            }
+
+            Participant participant = Participant.create(user, gathering, RSV_STATUS.RESERVED);
+            participant.setDate();
+            participantRepository.save(participant);
+            gathering.increaseCurrentCount();
         }
-
-        gathering.increaseCurrentCount();
-        Participant participant = Participant.create(user, gathering);
-
-        participantRepository.save(participant);
     }
 
     @Transactional
     public void cancelGathering(Long userId, Long gatheringId) {
+        User user = getUserById(userId);
         Gathering gathering = getGatheringById(gatheringId);
 
-        Participant participant = participantRepository.findByUser_IdAndGathering_Id(userId, gatheringId)
+        Participant participant = participantRepository.findByUserAndGathering(user, gathering)
             .orElseThrow(() -> new IllegalArgumentException("참여한 모집글이 아닙니다."));
         gathering.decreaseCurrentCount();
 
-        participantRepository.delete(participant);
+        participant.setRsvStatus(RSV_STATUS.CANCELED);
+        participant.setDate();
+
+        participantRepository.save(participant);
     }
 
     @Transactional

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import tourism_data.Surfing_The_Gangwon.entity.Gathering;
 import tourism_data.Surfing_The_Gangwon.entity.Participant;
 import tourism_data.Surfing_The_Gangwon.entity.User;
 
@@ -11,6 +12,7 @@ import tourism_data.Surfing_The_Gangwon.entity.User;
 public interface ParticipantRepository extends JpaRepository<Participant, Long> {
 
     boolean existsByUser_IdAndGathering_Id(Long userId, Long gatheringId);
-    Optional<Participant> findByUser_IdAndGathering_Id(Long userId, Long gatheringId);
+    Optional<Participant> findByUserAndGathering(User user, Gathering gathering);
     List<Participant> findByUser(User user);
+    List<Participant> findByGathering(Gathering gathering);
 }

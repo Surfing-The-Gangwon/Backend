@@ -11,6 +11,7 @@ import tourism_data.Surfing_The_Gangwon.entity.User;
 import tourism_data.Surfing_The_Gangwon.repository.GatheringRepository;
 import tourism_data.Surfing_The_Gangwon.repository.ParticipantRepository;
 import tourism_data.Surfing_The_Gangwon.repository.UserRepository;
+import tourism_data.Surfing_The_Gangwon.status.RSV_STATUS;
 
 @Service
 public class UserService {
@@ -48,17 +49,19 @@ public class UserService {
         List<ReservedPostResponse> responses = new ArrayList<>();
 
         for (Participant participant : participantList) {
-            Gathering gathering = gatheringRepository.findById(participant.getGathering().getId())
-                .orElseThrow(() -> new IllegalArgumentException("참여신청을 한 모집글이 없습니다."));
+            if (participant.getRsvStatus().equals(RSV_STATUS.RESERVED)) {
+                Gathering gathering = gatheringRepository.findById(participant.getGathering().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("참여신청을 한 모집글이 없습니다."));
 
-            ReservedPostResponse response = ReservedPostResponse.create(gathering.getId(),
-                gathering.getTitle(), gathering.getContents(), gathering.getPhone(),
-                gathering.getCurrentCount(), gathering.getMaxCount(), gathering.getMeetingTime(),
-                gathering.getDate(), gathering.getLevel(), gathering.getState());
-            responses.add(response);
+                ReservedPostResponse response = ReservedPostResponse.create(gathering.getId(),
+                    gathering.getTitle(), gathering.getContents(), gathering.getPhone(),
+                    gathering.getCurrentCount(), gathering.getMaxCount(), gathering.getMeetingTime(),
+                    gathering.getDate(), gathering.getLevel(), gathering.getState());
+                responses.add(response);
+            }
         }
 
-        return  responses;
+        return responses;
     }
 
     private User getUserById(Long userId) {
