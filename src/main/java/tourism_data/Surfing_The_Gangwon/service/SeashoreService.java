@@ -3,6 +3,7 @@ package tourism_data.Surfing_The_Gangwon.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import tourism_data.Surfing_The_Gangwon.Constants.Format;
 import tourism_data.Surfing_The_Gangwon.Constants.MarkerType;
@@ -22,7 +23,8 @@ import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WavePeriodRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyForecastResponse;
-import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyTideResponse;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyTideFilteredResponse;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyTideFilteredResponse.DailyTideDto;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.UVResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WavePeriodResponse;
@@ -176,7 +178,7 @@ public class SeashoreService {
     }
 
     // 단기 해상 예보 조회
-    public List<DailyForecastResponse> getDailyRangeForecast(Long beachCode) {
+    public List<DailyForecastResponse> getDailySeaForecast(Long beachCode) {
         var startDateTime = LocalDateTime.now().minusDays(1);
         var startFormatted = startDateTime.format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
         var endDateTime = LocalDateTime.now().plusDays(4);
@@ -184,7 +186,6 @@ public class SeashoreService {
         var start = startFormatted.substring(0, 10);
         var end = endFormatted.substring(0, 10);
         var regId = BeachRegIdMapper.getRegId(String.valueOf(beachCode));
-
         DailyForecastRequest request = DailyForecastRequest.builder()
             .reg(regId)
             .tmfc1(start)
@@ -194,25 +195,33 @@ public class SeashoreService {
             .authKey(getApiHubAuthKey())
             .build();
 
-        var tideResponse = getDailyTideForecast(regId, startDateTime, endDateTime);
-        log.info("Tide response: {}", tideResponse.toString());
         var response = weatherClient.getDailyRangeForecast(request);
         return DailyForecastParser.parseWeatherData(response);
     }
 
     // 조석 정보 조회
-    private List<DailyTideResponse> getDailyTideForecast(String beachNum, LocalDateTime start, LocalDateTime end) {
-        var list = new ArrayList<DailyTideResponse>();
+    public List<DailyTideFilteredResponse> getDailyTideForecast(Long beachCode) {
+        var list = new ArrayList<DailyTideFilteredResponse>();
+        var startDateTime = LocalDateTime.now().minusDays(1);
+        var endDateTime = LocalDateTime.now().plusDays(4);
 
-        while (!start.isAfter(end)) {
-            var baseDate = start.format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE)).substring(0, 8);
+        while (!startDateTime.isAfter(endDateTime)) {
+            var baseDate = startDateTime.format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE)).substring(0, 8);
             DailyTideRequest request = DailyTideRequest.builder()
-                .beachNum(beachNum)
+                .beachNum(String.valueOf(beachCode))
                 .baseDate(baseDate)
                 .numOfRows(String.valueOf(100))
                 .build();
-            start = start.plusDays(1);
-            list.add(weatherClient.getDailyTideForecast(request));
+            startDateTime = startDateTime.plusDays(1);
+
+            var response = weatherClient.getDailyTideForecast(request);
+            List<DailyTideDto> filtered = response.response().body.items.item
+                .stream()
+                .filter(item -> !Set.of("FT2", "ET1").contains(item.tiType))
+                .map(DailyTideDto::create)
+                .toList();
+
+            list.add(DailyTideFilteredResponse.create(filtered));
         }
         return list;
     }

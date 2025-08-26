@@ -31,6 +31,11 @@ public class Constants {
         public static final String WAV = "WAV"; // 파고
         public static final String VEC = "VEC"; // 풍향
         public static final String WSD = "WSD"; // 풍속
+
+        public static class Type {
+            public static final String SEA_FORECAST = "SEA_FORECAST";
+            public static final String TIDE_FORECAST = "TIDE_FORECAST";
+        }
     }
 
     public static class Unit {

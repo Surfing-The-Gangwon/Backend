@@ -10,6 +10,7 @@ import tourism_data.Surfing_The_Gangwon.dto.MarkerInfo;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreDetailResponse;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyForecastResponse;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyTideFilteredResponse;
 import tourism_data.Surfing_The_Gangwon.service.SeashoreService;
 
 @RestController
@@ -35,8 +36,14 @@ public class SeashoreController {
     }
 
     @GetMapping("/seashores/{beach_code}/forecasts")
-    public ResponseEntity<List<DailyForecastResponse>> getDailyForecasts(@PathVariable(name = "beach_code") Long beachCode) {
-        var response = seashoreService.getDailyRangeForecast(beachCode);
+    public ResponseEntity<List<DailyForecastResponse>> getDailySeaForecasts(@PathVariable(name = "beach_code") Long beachCode) {
+        var response = seashoreService.getDailySeaForecast(beachCode);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/seashores/{beach_code}/forecasts/tide")
+    public ResponseEntity<List<DailyTideFilteredResponse>> getDailyTideForecasts(@PathVariable(name = "beach_code") Long beachCode) {
+        var response = seashoreService.getDailyTideForecast(beachCode);
         return ResponseEntity.ok(response);
     }
 
