@@ -12,6 +12,7 @@ public class Constants {
             public static final String WAVE_PERIOD = "https://apihub.kma.go.kr/api/typ01/url/kma_buoy.php?";
             public static final String SHORT_RANGE_FORECAST = "https://apihub.kma.go.kr/api/typ01/url/fct_afs_do.php?";
             public static final String UV_FORECAST = "/1360000/LivingWthrIdxServiceV4/getUVIdxV4";
+            public static final String TIDE_FORECAST = "/1360000/BeachInfoservice/getTideInfoBeach";
         }
     }
 
