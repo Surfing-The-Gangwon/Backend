@@ -29,7 +29,7 @@ public class UserService {
 
     public List<WrittenPostResponse> getWrittenPost(Long userId) {
         User user = getUserById(userId);
-        List<Gathering> gathringList = gatheringRepository.findByUser(user);
+        List<Gathering> gathringList = gatheringRepository.findByWriter(user);
         List<WrittenPostResponse> responses = new ArrayList<>();
 
         for (Gathering gathering : gathringList) {
