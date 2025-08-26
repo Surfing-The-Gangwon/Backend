@@ -28,7 +28,7 @@ public class NotificationService {
 
     public List<NotificationResponse> getNotificationMade(Long userId) {
         User user = getUserById(userId);
-        List<Gathering> gatherings = gatheringRepository.findByUser(user);
+        List<Gathering> gatherings = gatheringRepository.findByWriter(user);
         List<NotificationResponse> responses = new ArrayList<>();
 
         for (Gathering gathering : gatherings) {
@@ -46,7 +46,7 @@ public class NotificationService {
 
     public List<NotificationResponse> getNotificationCanceled(Long userId) {
         User user = getUserById(userId);
-        List<Gathering> gatherings = gatheringRepository.findByUser(user);
+        List<Gathering> gatherings = gatheringRepository.findByWriter(user);
         List<NotificationResponse> responses = new ArrayList<>();
 
         for (Gathering gathering : gatherings) {
@@ -64,7 +64,7 @@ public class NotificationService {
 
     public List<NotificationResponse> getNotificationFull(Long userId) {
         User user = getUserById(userId);
-        List<Gathering> gatherings = gatheringRepository.findByUser(user);
+        List<Gathering> gatherings = gatheringRepository.findByWriter(user);
         List<NotificationResponse> responses = new ArrayList<>();
 
         for (Gathering gathering : gatherings) {

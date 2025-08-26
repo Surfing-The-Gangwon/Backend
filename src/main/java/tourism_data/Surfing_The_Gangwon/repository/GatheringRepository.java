@@ -11,5 +11,5 @@ import tourism_data.Surfing_The_Gangwon.entity.User;
 public interface GatheringRepository extends JpaRepository<Gathering, Long> {
 
     List<Gathering> findByDateAndSeashore_Id(LocalDate date, Long seashoreId);
-    List<Gathering> findByUser(User used);
+    List<Gathering> findByWriter(User writer);
 }
