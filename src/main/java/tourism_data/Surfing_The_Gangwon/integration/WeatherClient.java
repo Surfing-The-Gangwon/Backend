@@ -10,10 +10,12 @@ import tourism_data.Surfing_The_Gangwon.Constants.URL.WEATHER;
 import tourism_data.Surfing_The_Gangwon.dto.request.BaseRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.DailyForecastRequest;
+import tourism_data.Surfing_The_Gangwon.dto.request.DailyTideRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.UVRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WavePeriodRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyTideResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.UVResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 
@@ -78,6 +80,33 @@ public class WeatherClient {
             })
             .retrieve()
             .bodyToMono(UVResponse.class)
+            .timeout(Duration.ofSeconds(30))
+            .block();
+
+        if (response == null) {
+            throw new IllegalStateException("Empty response from Weather API");
+        }
+
+        return response;
+    }
+
+    public DailyTideResponse getDailyTideForecast(DailyTideRequest request) {
+        DailyTideResponse response = webClient.get()
+            .uri(uriBuilder -> {
+                URI uri = uriBuilder
+                    .path(WEATHER.TIDE_FORECAST)
+                    .queryParam(BaseRequest.SERVICE_KEY, UriUtils.decode(BaseRequest.getServiceKey(), StandardCharsets.UTF_8))
+                    .queryParam(BaseRequest.PAGE_NO, request.getPageNo())
+                    .queryParam(BaseRequest.NUM_OF_ROWS, request.getNumOfRows())
+                    .queryParam(BaseRequest.DATA_TYPE, request.getDataType())
+                    .queryParam(BaseRequest.BEACH_NUM, request.getBeachNum())
+                    .queryParam(DailyTideRequest.BASE_DATE, request.getBaseDate())
+                    .build();
+                log.info("API REQUEST: {}", uri.toString());
+                return uri;
+            })
+            .retrieve()
+            .bodyToMono(DailyTideResponse.class)
             .timeout(Duration.ofSeconds(30))
             .block();
 

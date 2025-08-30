@@ -2,6 +2,8 @@ package tourism_data.Surfing_The_Gangwon.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import tourism_data.Surfing_The_Gangwon.Constants.Format;
 import tourism_data.Surfing_The_Gangwon.Constants.MarkerType;
@@ -15,11 +17,14 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.DailyForecastRequest;
+import tourism_data.Surfing_The_Gangwon.dto.request.DailyTideRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.UVRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WaterTempRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.WavePeriodRequest;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyForecastResponse;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyTideFilteredResponse;
+import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyTideFilteredResponse.DailyTideDto;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.UVResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WaterTempResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.WavePeriodResponse;
@@ -173,12 +178,13 @@ public class SeashoreService {
     }
 
     // 단기 해상 예보 조회
-    public List<DailyForecastResponse> getDailyRangeForecast(Long beachCode) {
-        var startDateTime = LocalDateTime.now().minusDays(1).format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
-        var endDateTime = LocalDateTime.now().plusDays(4).format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
-        var start = startDateTime.substring(0, 10);
-        var end = endDateTime.substring(0, 10);
-
+    public List<DailyForecastResponse> getDailySeaForecast(Long beachCode) {
+        var startDateTime = LocalDateTime.now().minusDays(1);
+        var startFormatted = startDateTime.format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        var endDateTime = LocalDateTime.now().plusDays(4);
+        var endFormatted = endDateTime.format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
+        var start = startFormatted.substring(0, 10);
+        var end = endFormatted.substring(0, 10);
         var regId = BeachRegIdMapper.getRegId(String.valueOf(beachCode));
         DailyForecastRequest request = DailyForecastRequest.builder()
             .reg(regId)
@@ -193,6 +199,32 @@ public class SeashoreService {
         return DailyForecastParser.parseWeatherData(response);
     }
 
+    // 조석 정보 조회
+    public List<DailyTideFilteredResponse> getDailyTideForecast(Long beachCode) {
+        var list = new ArrayList<DailyTideFilteredResponse>();
+        var startDateTime = LocalDateTime.now().minusDays(1);
+        var endDateTime = LocalDateTime.now().plusDays(4);
+
+        while (!startDateTime.isAfter(endDateTime)) {
+            var baseDate = startDateTime.format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE)).substring(0, 8);
+            DailyTideRequest request = DailyTideRequest.builder()
+                .beachNum(String.valueOf(beachCode))
+                .baseDate(baseDate)
+                .numOfRows(String.valueOf(100))
+                .build();
+            startDateTime = startDateTime.plusDays(1);
+
+            var response = weatherClient.getDailyTideForecast(request);
+            List<DailyTideDto> filtered = response.response().body.items.item
+                .stream()
+                .filter(item -> !Set.of("FT2", "ET1").contains(item.tiType))
+                .map(DailyTideDto::create)
+                .toList();
+
+            list.add(DailyTideFilteredResponse.create(filtered));
+        }
+        return list;
+    }
 
     public static String getApiHubAuthKey() {
         return ApiKeyManager.getApiKey(ApiKeyType.HUB_API);
