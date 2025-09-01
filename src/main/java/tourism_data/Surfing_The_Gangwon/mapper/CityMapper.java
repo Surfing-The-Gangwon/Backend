@@ -11,7 +11,8 @@ import java.util.Set;
  *
  */
 public enum CityMapper {
-    SOKCHO("5121000000", Set.of()),
+    GOSEONG("5182000000", Set.of("231", "236", "243", "245")),
+    SOKCHO("5121000000", Set.of("201", "202")),
     GANGNEUNG("5115000000", Set.of("176", "179", "172", "174")),
     YANGYANG("5183000000", Set.of("249", "250", "262", "263"));
 
