@@ -10,7 +10,8 @@ import java.util.Set;
  * 그러나 해변이 계속 늘어날 수록 수동적으로 값을 추가해줄 수 없기에 따로 DB 테이블로 분리 필요
  */
 public enum BeachStationMapper {
-    SOKCHO("22310", Set.of()),
+    GOSEONG("22310", Set.of("231", "236", "243", "245")),
+    SOKCHO("22310", Set.of("201", "202")),
     GANGNEUNG("22311", Set.of("176", "179", "172", "174")),
     YANGYANG("22305", Set.of("249", "250", "262", "263"));
 

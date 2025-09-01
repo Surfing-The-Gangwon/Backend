@@ -13,7 +13,8 @@ import java.util.Set;
  * 강원 남부: 12C20101 (추후 추가 예정)
  */
 public enum BeachRegIdMapper {
-    SOKCHO("12C20103", Set.of()),
+    GOSEONG("12C20103", Set.of("231", "236", "243", "245")),
+    SOKCHO("12C20103", Set.of("201", "202")),
     GANGNEUNG("12C20102", Set.of("176", "179", "172", "174")),
     YANGYANG("12C20103", Set.of("249", "250", "262", "263"));
 
