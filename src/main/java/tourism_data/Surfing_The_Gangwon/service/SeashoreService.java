@@ -10,8 +10,10 @@ import tourism_data.Surfing_The_Gangwon.Constants.MarkerType;
 import tourism_data.Surfing_The_Gangwon.Constants.Time;
 import tourism_data.Surfing_The_Gangwon.Constants.Unit;
 import tourism_data.Surfing_The_Gangwon.dto.BeachForecast;
+import tourism_data.Surfing_The_Gangwon.dto.CityDto;
 import tourism_data.Surfing_The_Gangwon.dto.MarkerInfo;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreDetailResponse;
+import tourism_data.Surfing_The_Gangwon.dto.SeashoreDto;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ import tourism_data.Surfing_The_Gangwon.integration.WeatherClient;
 import tourism_data.Surfing_The_Gangwon.mapper.BeachRegIdMapper;
 import tourism_data.Surfing_The_Gangwon.mapper.BeachStationMapper;
 import tourism_data.Surfing_The_Gangwon.mapper.CityMapper;
+import tourism_data.Surfing_The_Gangwon.repository.CityRepository;
 import tourism_data.Surfing_The_Gangwon.repository.MarkerRepository;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
 import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager;
@@ -45,12 +48,15 @@ import tourism_data.Surfing_The_Gangwon.util.DailyForecastParser;
 public class SeashoreService {
     private final SeashoreRepository seashoreRepository;
     private final MarkerRepository markerRepository;
+    private final CityRepository cityRepository;
     private final WeatherClient weatherClient;
 
     public SeashoreService(SeashoreRepository seashoreRepository, MarkerRepository markerRepository,
+        CityRepository cityRepository,
         WeatherClient weatherClient) {
         this.seashoreRepository = seashoreRepository;
         this.markerRepository = markerRepository;
+        this.cityRepository = cityRepository;
         this.weatherClient = weatherClient;
     }
 
@@ -67,7 +73,6 @@ public class SeashoreService {
     }
 
     public List<SeashoreResponse> getSeashoresByCity(Long cityId) {
-
         return seashoreRepository.findByCityId(cityId)
             .stream()
             .map((Seashore seashore) -> {
@@ -76,6 +81,20 @@ public class SeashoreService {
                     BeachForecast.create(forecastResponse), getWavePeriod(seashore.getBeachCode())
                 );
             })
+            .toList();
+    }
+
+    public List<CityDto> getAllCities() {
+        return cityRepository.findAll()
+            .stream()
+            .map(CityDto::create)
+            .toList();
+    }
+
+    public List<SeashoreDto> getBasicSeashoresByCity(Long cityId) {
+        return seashoreRepository.findByCityId(cityId)
+            .stream()
+            .map(SeashoreDto::create)
             .toList();
     }
 

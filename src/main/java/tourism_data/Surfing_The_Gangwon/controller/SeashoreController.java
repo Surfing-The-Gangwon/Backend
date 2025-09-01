@@ -6,11 +6,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tourism_data.Surfing_The_Gangwon.dto.CityDto;
 import tourism_data.Surfing_The_Gangwon.dto.MarkerInfo;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreDetailResponse;
+import tourism_data.Surfing_The_Gangwon.dto.SeashoreDto;
 import tourism_data.Surfing_The_Gangwon.dto.SeashoreResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyForecastResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.DailyTideFilteredResponse;
+import tourism_data.Surfing_The_Gangwon.entity.City;
 import tourism_data.Surfing_The_Gangwon.service.SeashoreService;
 
 @RestController
@@ -23,9 +26,24 @@ public class SeashoreController {
         this.seashoreService = seashoreService;
     }
 
+    @GetMapping("/cities")
+    public ResponseEntity<List<CityDto>> getAllCities() {
+        List<CityDto> response = seashoreService.getAllCities();
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/cities/{city_id}/seashores")
     public ResponseEntity<List<SeashoreResponse>> getSeashoresByCity(@PathVariable(name = "city_id") Long cityId) {
         List<SeashoreResponse> response = seashoreService.getSeashoresByCity(cityId);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 기상 정보 없이 도시별 해안 기본 정보 리스트만 반환하는 엔드포인트
+     */
+    @GetMapping("/cities/{city_id}/seashores/basic")
+    public ResponseEntity<List<SeashoreDto>> getBasicSeashoresByCity(@PathVariable(name = "city_id") Long cityId) {
+        List<SeashoreDto> response = seashoreService.getBasicSeashoresByCity(cityId);
         return ResponseEntity.ok(response);
     }
 
