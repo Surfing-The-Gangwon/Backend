@@ -51,15 +51,20 @@ public class GatheringService {
     }
 
     public void createGathering(Long userId, CreateGatheringRequest request) {
+        System.out.println("0");
         User user = getUserById(userId);
+        System.out.println("1");
         Seashore seashore = seashoreRepository.findByName(request.seashoreName())
             .orElseThrow(() -> new IllegalArgumentException("not found seashore"));
-
+        System.out.println("2");
         Gathering gathering = Gathering.create(user, seashore, request.title(), request.contents(),
-            request.phone(), request.maxCount(), request.meetingTime(), request.level(), STATE.OPEN);
+            request.phone(), request.maxCount(), request.level(), STATE.OPEN);
+        System.out.println("3");
         gathering.setDate();
-
+        gathering.setMeetingTime();
+        System.out.println("4");
         gatheringRepository.save(gathering);
+        System.out.println("5");
     }
 
     @Transactional

@@ -41,8 +41,9 @@ public class GatheringController {
     @PostMapping
     public ResponseEntity<Void> createGathering(@AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestBody CreateGatheringRequest request) {
+        System.out.println("-1");
         gatheringService.createGathering(userDetails.getId(), request);
-
+        System.out.println("-2");
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

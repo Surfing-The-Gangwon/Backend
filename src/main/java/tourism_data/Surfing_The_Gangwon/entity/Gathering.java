@@ -84,7 +84,7 @@ public class Gathering {
     }
 
     public static Gathering create(User writer, Seashore seashore, String title, String contents, String phone,
-        int maxCount, LocalDateTime meetingTime, LEVEL level, STATE state) {
+        int maxCount, LEVEL level, STATE state) {
 
         return Gathering.builder()
             .writer(writer)
@@ -93,7 +93,6 @@ public class Gathering {
             .contents(contents)
             .phone(phone)
             .maxCount(maxCount)
-            .meetingTime(meetingTime)
             .level(level)
             .state(state)
             .build();
@@ -102,6 +101,8 @@ public class Gathering {
     public void setDate() {
         this.date = LocalDate.now();
     }
+
+    public void setMeetingTime() { this.meetingTime = LocalDateTime.now(); }
 
     public void setStateClose() {
         this.state = STATE.CLOSE;
