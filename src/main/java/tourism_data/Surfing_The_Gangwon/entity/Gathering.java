@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import tourism_data.Surfing_The_Gangwon.status.LEVEL;
+import tourism_data.Surfing_The_Gangwon.status.POST_ACTION;
 import tourism_data.Surfing_The_Gangwon.status.STATE;
 
 @Entity
@@ -65,7 +66,11 @@ public class Gathering {
     @Enumerated(EnumType.STRING)
     @Column(name = "state", nullable = false)
     private STATE state;
-
+    /*
+    @Enumerated(EnumType.STRING)
+    @Column(name = "post_action")
+    private POST_ACTION postAction;
+     */
     protected Gathering() {
     }
 

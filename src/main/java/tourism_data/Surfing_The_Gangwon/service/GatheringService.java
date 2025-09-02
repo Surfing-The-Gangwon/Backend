@@ -16,6 +16,7 @@ import tourism_data.Surfing_The_Gangwon.repository.GatheringRepository;
 import tourism_data.Surfing_The_Gangwon.repository.ParticipantRepository;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
 import tourism_data.Surfing_The_Gangwon.repository.UserRepository;
+import tourism_data.Surfing_The_Gangwon.status.POST_ACTION;
 import tourism_data.Surfing_The_Gangwon.status.RSV_STATUS;
 import tourism_data.Surfing_The_Gangwon.status.STATE;
 
@@ -35,15 +36,24 @@ public class GatheringService {
         this.seashoreRepository = seashoreRepository;
     }
 
-    public List<GatheringBySeashoreResponse> getGatheringBySeashoreId(LocalDate date, Long seashoreId) {
+    public List<GatheringBySeashoreResponse> getGatheringBySeashoreId(Long userId, LocalDate date,
+        Long seashoreId) {
+        User user = getUserById(userId);
         List<Gathering> gatherings = gatheringRepository.findByDateAndSeashore_Id(date, seashoreId);
         List<GatheringBySeashoreResponse> responses = new ArrayList<>();
 
         for (Gathering gathering : gatherings) {
+            POST_ACTION postAction = POST_ACTION.JOIN;
+            if (gathering.getWriter().equals(user)) {
+                postAction = POST_ACTION.COMPLETE;
+            } else if (participantRepository.existsByUserAndGathering(user, gathering)) {
+                postAction = POST_ACTION.CANCEL;
+            }
+
             GatheringBySeashoreResponse response = GatheringBySeashoreResponse.create(gathering.getId(),
                 gathering.getTitle(), gathering.getContents(), gathering.getPhone(),
                 gathering.getCurrentCount(), gathering.getMaxCount(), gathering.getMeetingTime(),
-                gathering.getDate(), gathering.getLevel(), gathering.getState());
+                gathering.getDate(), gathering.getLevel(), gathering.getState(), postAction);
             responses.add(response);
         }
 
@@ -51,20 +61,16 @@ public class GatheringService {
     }
 
     public void createGathering(Long userId, CreateGatheringRequest request) {
-        System.out.println("0");
         User user = getUserById(userId);
-        System.out.println("1");
         Seashore seashore = seashoreRepository.findByName(request.seashoreName())
             .orElseThrow(() -> new IllegalArgumentException("not found seashore"));
-        System.out.println("2");
+
         Gathering gathering = Gathering.create(user, seashore, request.title(), request.contents(),
             request.phone(), request.maxCount(), request.level(), STATE.OPEN);
-        System.out.println("3");
         gathering.setDate();
         gathering.setMeetingTime();
-        System.out.println("4");
+
         gatheringRepository.save(gathering);
-        System.out.println("5");
     }
 
     @Transactional
@@ -74,6 +80,9 @@ public class GatheringService {
 
         if (gathering.getState() == STATE.CLOSE) {
             throw new IllegalStateException("모집이 마감되었습니다.");
+        }
+        if (gathering.getWriter() == user) {
+            throw new IllegalStateException("자신이 작성한 게시글에 참여할 수 없습니다.");
         }
 
         Optional<Participant> existingOpt = participantRepository.findByUserAndGathering(user, gathering);
