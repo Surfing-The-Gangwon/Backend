@@ -2,6 +2,8 @@ package tourism_data.Surfing_The_Gangwon.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,6 +35,7 @@ public class Participant {
     @Column(name = "date", nullable = false)
     private LocalDate date;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "rev_status", nullable = false)
     private RSV_STATUS rsvStatus;
 

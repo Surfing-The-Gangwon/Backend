@@ -30,10 +30,11 @@ public class GatheringController {
 
     @GetMapping("/{seashore_id}")
     public ResponseEntity<List<GatheringBySeashoreResponse>> getGatheringBySeashoreId(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestParam(name = "date") LocalDate date,
         @PathVariable(name = "seashore_id") Long seashoreId) {
-        List<GatheringBySeashoreResponse> responses = gatheringService.getGatheringBySeashoreId(date,
-            seashoreId);
+        List<GatheringBySeashoreResponse> responses = gatheringService.getGatheringBySeashoreId(
+            userDetails.getId(), date, seashoreId);
 
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }

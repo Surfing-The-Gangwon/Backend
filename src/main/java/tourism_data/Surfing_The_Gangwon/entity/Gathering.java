@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import tourism_data.Surfing_The_Gangwon.status.LEVEL;
+import tourism_data.Surfing_The_Gangwon.status.POST_ACTION;
 import tourism_data.Surfing_The_Gangwon.status.STATE;
 
 @Entity
@@ -84,7 +85,7 @@ public class Gathering {
     }
 
     public static Gathering create(User writer, Seashore seashore, String title, String contents, String phone,
-        int maxCount, LocalDateTime meetingTime, LEVEL level, STATE state) {
+        int maxCount, LEVEL level, STATE state) {
 
         return Gathering.builder()
             .writer(writer)
@@ -93,7 +94,6 @@ public class Gathering {
             .contents(contents)
             .phone(phone)
             .maxCount(maxCount)
-            .meetingTime(meetingTime)
             .level(level)
             .state(state)
             .build();
@@ -101,6 +101,10 @@ public class Gathering {
 
     public void setDate() {
         this.date = LocalDate.now();
+    }
+
+    public void setMeetingTime(LocalDateTime meetingTime) {
+        this.meetingTime = meetingTime;
     }
 
     public void setStateClose() {

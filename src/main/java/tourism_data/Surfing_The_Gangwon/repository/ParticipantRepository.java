@@ -11,7 +11,7 @@ import tourism_data.Surfing_The_Gangwon.entity.User;
 @Repository
 public interface ParticipantRepository extends JpaRepository<Participant, Long> {
 
-    boolean existsByUser_IdAndGathering_Id(Long userId, Long gatheringId);
+    boolean existsByUserAndGathering(User user, Gathering gathering);
     Optional<Participant> findByUserAndGathering(User user, Gathering gathering);
     List<Participant> findByUser(User user);
     List<Participant> findByGathering(Gathering gathering);
