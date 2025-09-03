@@ -24,16 +24,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "kakao_id", nullable = false)
+    @Column(name = "kakao_id", nullable = false, unique = true)
     private String kakaoId;
 
     @Column(name = "user_name", nullable = false)
     private String userName;
 
-    @Column(name = "kakao_access_token", nullable = false)
+    @Column(name = "kakao_access_token", nullable = false, length = 2048)
     private String kakaoAccessToken;
 
-    @Column(name = "kakao_refresh_token", nullable = false)
+    @Column(name = "kakao_refresh_token", length = 2048)
     private String kakaoRefreshToken;
 
     protected User() {
