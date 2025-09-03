@@ -2,6 +2,8 @@ package tourism_data.Surfing_The_Gangwon.service;
 
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -65,10 +67,13 @@ public class GatheringService {
         Seashore seashore = seashoreRepository.findByName(request.seashoreName())
             .orElseThrow(() -> new IllegalArgumentException("not found seashore"));
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm");
+        LocalDateTime meetingDateTime = LocalDateTime.parse(request.meetingTime(), formatter);
+
         Gathering gathering = Gathering.create(user, seashore, request.title(), request.contents(),
             request.phone(), request.maxCount(), request.level(), STATE.OPEN);
         gathering.setDate();
-        gathering.setMeetingTime();
+        gathering.setMeetingTime(meetingDateTime);
 
         gatheringRepository.save(gathering);
     }

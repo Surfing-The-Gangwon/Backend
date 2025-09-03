@@ -66,11 +66,7 @@ public class Gathering {
     @Enumerated(EnumType.STRING)
     @Column(name = "state", nullable = false)
     private STATE state;
-    /*
-    @Enumerated(EnumType.STRING)
-    @Column(name = "post_action")
-    private POST_ACTION postAction;
-     */
+
     protected Gathering() {
     }
 
@@ -107,7 +103,9 @@ public class Gathering {
         this.date = LocalDate.now();
     }
 
-    public void setMeetingTime() { this.meetingTime = LocalDateTime.now(); }
+    public void setMeetingTime(LocalDateTime meetingTime) {
+        this.meetingTime = meetingTime;
+    }
 
     public void setStateClose() {
         this.state = STATE.CLOSE;
