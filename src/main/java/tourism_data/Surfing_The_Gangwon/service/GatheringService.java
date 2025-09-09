@@ -41,7 +41,12 @@ public class GatheringService {
     public List<GatheringBySeashoreResponse> getGatheringBySeashoreId(Long userId, LocalDate date,
         Long seashoreId) {
         User user = getUserById(userId);
-        List<Gathering> gatherings = gatheringRepository.findByDateAndSeashore_Id(date, seashoreId);
+
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.plusDays(1).atStartOfDay();
+
+        List<Gathering> gatherings =
+            gatheringRepository.findAllBySeashoreAndMeetingDate(seashoreId, start, end);
         List<GatheringBySeashoreResponse> responses = new ArrayList<>();
 
         for (Gathering gathering : gatherings) {
@@ -74,6 +79,7 @@ public class GatheringService {
             request.phone(), request.maxCount(), request.level(), STATE.OPEN);
         gathering.setDate();
         gathering.setMeetingTime(meetingDateTime);
+        gathering.increaseCurrentCount();
 
         gatheringRepository.save(gathering);
     }

@@ -1,15 +1,16 @@
 package tourism_data.Surfing_The_Gangwon.service;
 
+import jakarta.transaction.Transactional;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+
 import org.springframework.web.client.RestTemplate;
-import tourism_data.Surfing_The_Gangwon.dto.AccessTokenResponse;
-import tourism_data.Surfing_The_Gangwon.dto.KakaoTokenResponse;
-import java.util.Map;
-import tourism_data.Surfing_The_Gangwon.dto.KakaoUserInfo;
+import org.springframework.web.reactive.function.client.WebClient;
+import tourism_data.Surfing_The_Gangwon.entity.User;
+import tourism_data.Surfing_The_Gangwon.integration.KakaoApiClient;
+import tourism_data.Surfing_The_Gangwon.repository.UserRepository;
 
 @Service
 public class KakaoAuthService {
@@ -20,62 +21,57 @@ public class KakaoAuthService {
     private String redirectUri;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public KakaoTokenResponse getTokensByCode(String code) {
-        String url = "https://kauth.kakao.com/oauth/token";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    private final WebClient webClient = WebClient.builder()
+        .baseUrl("https://kapi.kakao.com")
+        .build();
 
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "authorization_code");
-        params.add("client_id", clientId);
-        params.add("redirect_uri", redirectUri);
-        params.add("code", code);
+    private final KakaoApiClient kakaoApiClient;
+    private final UserRepository userRepository;
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-        ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
-
-        Map<String, Object> body = response.getBody();
-        String accessToken = (String) body.get("access_token");
-        String refreshToken = (String) body.get("refresh_token");
-
-        return KakaoTokenResponse.create(accessToken, refreshToken);
+    public KakaoAuthService(KakaoApiClient kakaoApiClient, UserRepository userRepository) {
+        this.kakaoApiClient = kakaoApiClient;
+        this.userRepository = userRepository;
     }
 
-    public KakaoUserInfo getUserInfo(String accessToken) {
-        String url = "https://kapi.kakao.com/v2/user/me";
+    @Transactional
+    public void registerTokens(String accessToken, String refreshToken) {
+        var info = kakaoApiClient.getAccessTokenInfo(accessToken);
+        String kakaoId = String.valueOf(info.id());
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        User user = userRepository.findByKakaoId(kakaoId)
+            .orElseGet(() -> {
+                String userName = getKakaoUserName(accessToken);
+                return userRepository.save(User.create(
+                    kakaoId,
+                    userName,
+                    accessToken,
+                    refreshToken
+                ));
+            });
 
-        HttpEntity<Void> request = new HttpEntity<>(headers);
-        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, request, Map.class);
+        user.accessTokenUpdate(accessToken);
+        if (refreshToken != null && !refreshToken.isBlank()) {
+            user.refreshTokenUpdate(refreshToken);
+        }
 
-        Map<String, Object> body = response.getBody();
-        String id = String.valueOf(body.get("id"));
-
-        Map<String, Object> properties = (Map<String, Object>) body.get("properties");
-        String nickname = (String) properties.get("nickname");
-
-        return new KakaoUserInfo(id, nickname);
+        userRepository.save(user);
     }
 
-    public AccessTokenResponse getAccessTokenByRefreshToken(String refreshToken) {
-        String url = "https://kauth.kakao.com/oauth/token";
+    private String getKakaoUserName(String accessToken) {
+        try {
+            var json = webClient.get()
+                .uri("https://kapi.kakao.com/v2/user/me")
+                .header("Authorization", "Bearer " + accessToken)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            Map<String, Object> kakaoAccount = (Map<String, Object>) json.get("kakao_account");
+            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
 
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "refresh_token");
-        params.add("client_id", clientId);
-        params.add("refresh_token", refreshToken);
-
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-
-        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
-        Map body = response.getBody();
-
-        return AccessTokenResponse.create((String) body.get("access_token"));
+            return (String) profile.get("nickname");
+        } catch (Exception e) {
+            return "카카오사용자";
+        }
     }
 }
