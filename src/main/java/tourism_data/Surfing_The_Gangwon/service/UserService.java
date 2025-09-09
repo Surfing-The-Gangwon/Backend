@@ -2,8 +2,10 @@ package tourism_data.Surfing_The_Gangwon.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import tourism_data.Surfing_The_Gangwon.dto.ReservedPostResponse;
+import tourism_data.Surfing_The_Gangwon.dto.UserNameResponse;
 import tourism_data.Surfing_The_Gangwon.dto.WrittenPostResponse;
 import tourism_data.Surfing_The_Gangwon.entity.Gathering;
 import tourism_data.Surfing_The_Gangwon.entity.Participant;
@@ -62,6 +64,12 @@ public class UserService {
         }
 
         return responses;
+    }
+
+    public UserNameResponse getUserName(Long userId) {
+        User user = getUserById(userId);
+
+        return UserNameResponse.create(user.getUserName());
     }
 
     private User getUserById(Long userId) {
