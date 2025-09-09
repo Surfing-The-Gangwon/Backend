@@ -10,14 +10,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import tourism_data.Surfing_The_Gangwon.status.LEVEL;
-import tourism_data.Surfing_The_Gangwon.status.POST_ACTION;
 import tourism_data.Surfing_The_Gangwon.status.STATE;
 
 @Entity
@@ -29,7 +27,7 @@ public class Gathering {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User writer;
 
