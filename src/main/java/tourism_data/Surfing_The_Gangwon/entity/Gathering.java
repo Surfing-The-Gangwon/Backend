@@ -52,7 +52,7 @@ public class Gathering {
     @Column(name = "maxCount", nullable = false)
     private int maxCount;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/seoul")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
     @Column(name = "meetingTime", nullable = false)
     private LocalDateTime meetingTime;
 
