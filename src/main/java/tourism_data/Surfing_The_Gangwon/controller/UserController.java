@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tourism_data.Surfing_The_Gangwon.dto.ReservedPostResponse;
+import tourism_data.Surfing_The_Gangwon.dto.UserNameResponse;
 import tourism_data.Surfing_The_Gangwon.dto.WrittenPostResponse;
 import tourism_data.Surfing_The_Gangwon.security.CustomUserDetails;
 import tourism_data.Surfing_The_Gangwon.service.UserService;
@@ -36,5 +37,14 @@ public class UserController {
         List<ReservedPostResponse> responses = userService.getReservedPost(userDetails.getId());
 
         return ResponseEntity.status(HttpStatus.OK).body(responses);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserNameResponse> getUserName(
+        @AuthenticationPrincipal CustomUserDetails userDetails) {
+        UserNameResponse response = userService.getUserName(userDetails.getId());
+
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
