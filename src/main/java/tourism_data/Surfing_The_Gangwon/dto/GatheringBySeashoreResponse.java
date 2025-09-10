@@ -10,11 +10,11 @@ import tourism_data.Surfing_The_Gangwon.status.STATE;
 @Builder
 public record GatheringBySeashoreResponse(Long gatheringId, String title, String contents, String phone,
                                           int currentCount, int maxCount, LocalDateTime meetingTime,
-                                          LocalDate date, LEVEL level, STATE state, POST_ACTION postAction) {
+                                          LocalDate date, LEVEL level, STATE state, String city, String seashore, POST_ACTION postAction) {
 
     public static GatheringBySeashoreResponse create(Long gatheringId, String title, String contents,
         String phone, int currentCount, int maxCount, LocalDateTime meetingTime, LocalDate date,
-        LEVEL level, STATE state, POST_ACTION postAction) {
+        LEVEL level, STATE state, String city, String seashore, POST_ACTION postAction) {
 
         return GatheringBySeashoreResponse.builder()
             .gatheringId(gatheringId)
@@ -27,6 +27,8 @@ public record GatheringBySeashoreResponse(Long gatheringId, String title, String
             .date(date)
             .level(level)
             .state(state)
+            .city(city)
+            .seashore(seashore)
             .postAction(postAction)
             .build();
     }
