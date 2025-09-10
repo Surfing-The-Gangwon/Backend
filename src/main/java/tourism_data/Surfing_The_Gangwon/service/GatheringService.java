@@ -60,7 +60,8 @@ public class GatheringService {
             GatheringBySeashoreResponse response = GatheringBySeashoreResponse.create(gathering.getId(),
                 gathering.getTitle(), gathering.getContents(), gathering.getPhone(),
                 gathering.getCurrentCount(), gathering.getMaxCount(), gathering.getMeetingTime(),
-                gathering.getDate(), gathering.getLevel(), gathering.getState(), postAction);
+                gathering.getDate(), gathering.getLevel(), gathering.getState(),
+                gathering.getSeashore().getCity().getCityName(), gathering.getSeashore().getName(), postAction);
             responses.add(response);
         }
 

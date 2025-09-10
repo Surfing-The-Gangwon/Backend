@@ -10,11 +10,11 @@ import tourism_data.Surfing_The_Gangwon.status.STATE;
 @Builder
 public record ReservedPostResponse(Long id, String title, String contents, String phone, int currentCount,
                                   int maxCount, LocalDateTime meetingTime, LocalDate date, LEVEL level,
-                                  STATE state, POST_ACTION postAction) {
+                                  STATE state, String city, String seashore, POST_ACTION postAction) {
 
     public static ReservedPostResponse create(Long id, String title, String contents, String phone,
         int currentCount, int maxCount, LocalDateTime meetingTime, LocalDate date, LEVEL level, STATE state,
-        POST_ACTION postAction) {
+        String city, String seashore, POST_ACTION postAction) {
 
         return ReservedPostResponse.builder()
             .id(id)
@@ -27,6 +27,8 @@ public record ReservedPostResponse(Long id, String title, String contents, Strin
             .date(date)
             .level(level)
             .state(state)
+            .city(city)
+            .seashore(seashore)
             .postAction(postAction)
             .build();
     }
