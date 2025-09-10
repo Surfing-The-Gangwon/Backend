@@ -2,7 +2,6 @@ package tourism_data.Surfing_The_Gangwon.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import tourism_data.Surfing_The_Gangwon.dto.ReservedPostResponse;
 import tourism_data.Surfing_The_Gangwon.dto.UserNameResponse;
@@ -13,6 +12,7 @@ import tourism_data.Surfing_The_Gangwon.entity.User;
 import tourism_data.Surfing_The_Gangwon.repository.GatheringRepository;
 import tourism_data.Surfing_The_Gangwon.repository.ParticipantRepository;
 import tourism_data.Surfing_The_Gangwon.repository.UserRepository;
+import tourism_data.Surfing_The_Gangwon.status.POST_ACTION;
 import tourism_data.Surfing_The_Gangwon.status.RSV_STATUS;
 
 @Service
@@ -35,10 +35,12 @@ public class UserService {
         List<WrittenPostResponse> responses = new ArrayList<>();
 
         for (Gathering gathering : gathringList) {
+            POST_ACTION postAction = getPostAction(user, gathering);
+
             WrittenPostResponse response = WrittenPostResponse.create(gathering.getId(),
                 gathering.getTitle(), gathering.getContents(), gathering.getPhone(),
                 gathering.getCurrentCount(), gathering.getMaxCount(), gathering.getMeetingTime(),
-                gathering.getDate(), gathering.getLevel(), gathering.getState());
+                gathering.getDate(), gathering.getLevel(), gathering.getState(), postAction);
             responses.add(response);
         }
 
@@ -52,13 +54,13 @@ public class UserService {
 
         for (Participant participant : participantList) {
             if (participant.getRsvStatus().equals(RSV_STATUS.RESERVED)) {
-                Gathering gathering = gatheringRepository.findById(participant.getGathering().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("참여신청을 한 모집글이 없습니다."));
+                Gathering gathering = participant.getGathering();
+                POST_ACTION postAction = getPostAction(user, gathering);
 
                 ReservedPostResponse response = ReservedPostResponse.create(gathering.getId(),
                     gathering.getTitle(), gathering.getContents(), gathering.getPhone(),
                     gathering.getCurrentCount(), gathering.getMaxCount(), gathering.getMeetingTime(),
-                    gathering.getDate(), gathering.getLevel(), gathering.getState());
+                    gathering.getDate(), gathering.getLevel(), gathering.getState(), postAction);
                 responses.add(response);
             }
         }
@@ -76,5 +78,17 @@ public class UserService {
 
         return userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("not found user"));
+    }
+
+    private POST_ACTION getPostAction(User user, Gathering gathering) {
+        POST_ACTION postAction = POST_ACTION.JOIN;
+
+        if (gathering.getWriter().equals(user)) {
+            postAction = POST_ACTION.COMPLETE;
+        } else if (participantRepository.existsByUserAndGathering(user, gathering)) {
+            postAction = POST_ACTION.CANCEL;
+        }
+
+        return postAction;
     }
 }

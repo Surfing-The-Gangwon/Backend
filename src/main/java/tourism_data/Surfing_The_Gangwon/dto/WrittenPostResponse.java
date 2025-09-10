@@ -4,15 +4,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import tourism_data.Surfing_The_Gangwon.status.LEVEL;
+import tourism_data.Surfing_The_Gangwon.status.POST_ACTION;
 import tourism_data.Surfing_The_Gangwon.status.STATE;
 
 @Builder
 public record WrittenPostResponse(Long id, String title, String contents, String phone, int currentCount,
                                   int maxCount, LocalDateTime meetingTime, LocalDate date, LEVEL level,
-                                  STATE state) {
+                                  STATE state, POST_ACTION postAction) {
 
     public static WrittenPostResponse create(Long id, String title, String contents, String phone,
-        int currentCount, int maxCount, LocalDateTime meetingTime, LocalDate date, LEVEL level, STATE state) {
+        int currentCount, int maxCount, LocalDateTime meetingTime, LocalDate date, LEVEL level, STATE state,
+        POST_ACTION postAction) {
 
         return WrittenPostResponse.builder()
             .id(id)
@@ -25,6 +27,7 @@ public record WrittenPostResponse(Long id, String title, String contents, String
             .date(date)
             .level(level)
             .state(state)
+            .postAction(postAction)
             .build();
     }
 }
