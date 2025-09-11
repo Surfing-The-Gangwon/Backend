@@ -63,6 +63,7 @@ public class SeashoreService {
     public List<MarkerInfo> getMarkersBySeashore(Long seashoreId) {
         return markerRepository.findBySeashoreId(seashoreId).stream()
             .map(marker -> MarkerInfo.builder()
+                    .id(marker.getMarkerId())
                     .type(marker.getType())
                     .latitude(marker.getLatitude())
                     .longitude(marker.getLongitude())
