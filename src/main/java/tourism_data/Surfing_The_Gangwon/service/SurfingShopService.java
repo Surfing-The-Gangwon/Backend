@@ -8,9 +8,11 @@ import tourism_data.Surfing_The_Gangwon.dto.LessonDto;
 import tourism_data.Surfing_The_Gangwon.dto.RentalDto;
 import tourism_data.Surfing_The_Gangwon.dto.response.shop.SurfingShopInfoResponse;
 import tourism_data.Surfing_The_Gangwon.dto.response.shop.SurfingShopInfoResponse.ShopImage;
+import tourism_data.Surfing_The_Gangwon.entity.Marker;
 import tourism_data.Surfing_The_Gangwon.entity.SurfingShop;
 import tourism_data.Surfing_The_Gangwon.entity.SurfingShopPicture;
 import tourism_data.Surfing_The_Gangwon.repository.LessonRepository;
+import tourism_data.Surfing_The_Gangwon.repository.MarkerRepository;
 import tourism_data.Surfing_The_Gangwon.repository.RentalRepository;
 import tourism_data.Surfing_The_Gangwon.repository.SurfingShopRepository;
 import tourism_data.Surfing_The_Gangwon.repository.SurfingShopPictureRepository;
@@ -22,21 +24,26 @@ public class SurfingShopService {
     private final LessonRepository lessonRepository;
     private final RentalRepository rentalRepository;
     private final ImageStorageService imageStorageService;
+    private final MarkerRepository markerRepository;
 
     public SurfingShopService(SurfingShopRepository surfingShopRepository, SurfingShopPictureRepository surfingShopPictureRepository,
         LessonRepository lessonRepository, RentalRepository rentalRepository,
-        ImageStorageService imageStorageService) {
+        ImageStorageService imageStorageService, MarkerRepository markerRepository) {
         this.surfingShopRepository = surfingShopRepository;
         this.surfingShopPictureRepository = surfingShopPictureRepository;
         this.lessonRepository = lessonRepository;
         this.rentalRepository = rentalRepository;
         this.imageStorageService = imageStorageService;
+        this.markerRepository = markerRepository;
     }
 
-    public SurfingShopInfoResponse getSurfingMarkerInfo(Long shopId) {
-        SurfingShop surfingShop = getSurfingShop(shopId);
+    public SurfingShopInfoResponse getSurfingMarkerInfo(Long markerId) {
+        Marker marker = markerRepository.findById(markerId)
+            .orElseThrow(() -> new RuntimeException("MARKER IS NOT FOUND"));
 
-        List<ShopImage> imgUrlList = surfingShopPictureRepository.findByShopShopId(shopId)
+        SurfingShop surfingShop = getSurfingShop(marker);
+
+        List<ShopImage> imgUrlList = surfingShopPictureRepository.findByShopShopId(surfingShop.getShopId())
             .stream()
             .map(ShopImage::create)
             .toList();
@@ -72,15 +79,28 @@ public class SurfingShopService {
             .orElseThrow(() -> new RuntimeException("SURFING SHOP IS NOT FOUND"));
     }
 
-    public List<LessonDto> getLessonInfo(Long shopId) {
-        return lessonRepository.findByShopShopId(shopId)
+    private SurfingShop getSurfingShop(Marker marker) {
+        return surfingShopRepository.findByMarker(marker)
+            .orElseThrow(() -> new RuntimeException("SURFING SHOP IS NOT FOUND"));
+    }
+
+    public List<LessonDto> getLessonInfo(Long markerId) {
+        Marker marker = markerRepository.findById(markerId)
+            .orElseThrow(() -> new RuntimeException("MARKER IS NOT FOUND"));
+
+        SurfingShop surfingShop = getSurfingShop(marker);
+
+        return lessonRepository.findByShopShopId(surfingShop.getShopId())
             .stream()
             .map(LessonDto::create)
             .toList();
     }
 
-    public List<RentalDto> getRentalInfo(Long shopId) {
-        return rentalRepository.findByShopShopId(shopId)
+    public List<RentalDto> getRentalInfo(Long markerId) {
+        Marker marker = markerRepository.findById(markerId)
+            .orElseThrow(() -> new RuntimeException("MARKER IS NOT FOUND"));
+        SurfingShop surfingShop = getSurfingShop(marker);
+        return rentalRepository.findByShopShopId(surfingShop.getShopId())
             .stream()
             .map(RentalDto::create)
             .toList();

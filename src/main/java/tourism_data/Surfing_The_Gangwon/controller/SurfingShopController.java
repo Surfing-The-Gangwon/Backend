@@ -30,9 +30,9 @@ public class SurfingShopController {
     /**
      * 서핑샵 정보 조회
      */
-    @GetMapping("/{shop_id}")
-    public ResponseEntity<SurfingShopInfoResponse> getSurfingMarkerInfo(@PathVariable("shop_id") Long shopId) {
-        var response = surfingShopService.getSurfingMarkerInfo(shopId);
+    @GetMapping("/{marker_id}")
+    public ResponseEntity<SurfingShopInfoResponse> getSurfingMarkerInfo(@PathVariable("marker_id") Long markerId) {
+        var response = surfingShopService.getSurfingMarkerInfo(markerId);
         return ResponseEntity.ok().body(response);
     }
 
@@ -50,15 +50,15 @@ public class SurfingShopController {
     /**
      * 수강 항목별 수강료에 대한 정보들 반환
      */
-    @GetMapping("{shop_id}/lesson")
-    public ResponseEntity<List<LessonDto>> getLessonInfo(@PathVariable("shop_id") Long shopId) {
-        var response = surfingShopService.getLessonInfo(shopId);
+    @GetMapping("{marker_id}/lesson")
+    public ResponseEntity<List<LessonDto>> getLessonInfo(@PathVariable("marker_id") Long markerId) {
+        var response = surfingShopService.getLessonInfo(markerId);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("{shop_id}/rental")
-    public ResponseEntity<List<RentalDto>> getRentalInfo(@PathVariable("shop_id") Long shopId) {
-        var response = surfingShopService.getRentalInfo(shopId);
+    @GetMapping("{marker_id}/rental")
+    public ResponseEntity<List<RentalDto>> getRentalInfo(@PathVariable("marker_id") Long markerId) {
+        var response = surfingShopService.getRentalInfo(markerId);
         return ResponseEntity.ok(response);
     }
 }

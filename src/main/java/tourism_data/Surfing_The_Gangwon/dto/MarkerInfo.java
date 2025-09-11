@@ -4,6 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record MarkerInfo(
+    Long id,
     String type,
     Double latitude,
     Double longitude,
