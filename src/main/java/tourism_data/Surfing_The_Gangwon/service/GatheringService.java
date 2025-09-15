@@ -51,9 +51,10 @@ public class GatheringService {
 
         for (Gathering gathering : gatherings) {
             POST_ACTION postAction = POST_ACTION.JOIN;
-            if (gathering.getWriter().equals(user)) {
+            if (gathering.getWriter().getId().equals(user.getId())) {
                 postAction = POST_ACTION.COMPLETE;
-            } else if (participantRepository.existsByUserAndGathering(user, gathering)) {
+            } else if (participantRepository.existsByUserAndGatheringAndRsvStatus(
+                user, gathering, RSV_STATUS.RESERVED)) {
                 postAction = POST_ACTION.CANCEL;
             }
 
@@ -90,39 +91,27 @@ public class GatheringService {
         User user = getUserById(userId);
         Gathering gathering = getGatheringById(gatheringId);
 
-        if (gathering.getState() == STATE.CLOSE) {
-            throw new IllegalStateException("모집이 마감되었습니다.");
-        }
-        if (gathering.getWriter() == user) {
-            throw new IllegalStateException("자신이 작성한 게시글에 참여할 수 없습니다.");
-        }
+        if (gathering.getState() == STATE.CLOSE) throw new IllegalStateException("모집이 마감되었습니다.");
+        if (gathering.getWriter().getId().equals(user.getId())) throw new IllegalStateException("본인 글 참여 불가");
 
-        Optional<Participant> existingOpt = participantRepository.findByUserAndGathering(user, gathering);
+        Optional<Participant> opt = participantRepository
+            .findFirstByUser_IdAndGathering_IdOrderByIdDesc(userId, gatheringId);
 
-        if (existingOpt.isPresent()) {
-            Participant participant = existingOpt.get();
-
-            if (participant.getRsvStatus() == RSV_STATUS.CANCELED) {
-                if (gathering.isFull()) {
-                    throw new IllegalStateException("모집이 마감되었습니다.");
-                }
-                participant.setRsvStatus(RSV_STATUS.RESERVED);
-                participant.setDate();
+        if (opt.isPresent()) {
+            Participant p = opt.get();
+            if (p.getRsvStatus() == RSV_STATUS.CANCELED) {
+                if (gathering.isFull()) throw new IllegalStateException("모집이 마감되었습니다.");
+                p.setRsvStatus(RSV_STATUS.RESERVED);
+                p.setDate();
                 gathering.increaseCurrentCount();
-
-                participantRepository.save(participant);
             } else {
                 throw new IllegalStateException("이미 참여한 모집글입니다.");
             }
-
         } else {
-            if (gathering.isFull()) {
-                throw new IllegalStateException("모집이 마감되었습니다.");
-            }
-
-            Participant participant = Participant.create(user, gathering, RSV_STATUS.RESERVED);
-            participant.setDate();
-            participantRepository.save(participant);
+            if (gathering.isFull()) throw new IllegalStateException("모집이 마감되었습니다.");
+            Participant p = Participant.create(user, gathering, RSV_STATUS.RESERVED);
+            p.setDate();
+            participantRepository.save(p);
             gathering.increaseCurrentCount();
         }
     }
@@ -134,8 +123,15 @@ public class GatheringService {
 
         Participant participant = participantRepository.findByUserAndGathering(user, gathering)
             .orElseThrow(() -> new IllegalArgumentException("참여한 모집글이 아닙니다."));
-        gathering.decreaseCurrentCount();
 
+        if (participant.getRsvStatus() == RSV_STATUS.CANCELED) {
+            throw new IllegalStateException("이미 취소한 모집글입니다.");
+        }
+        if (participant.getRsvStatus() != RSV_STATUS.RESERVED) {
+            throw new IllegalStateException("취소할 수 없는 상태입니다.");
+        }
+
+        gathering.decreaseCurrentCount();
         participant.setRsvStatus(RSV_STATUS.CANCELED);
         participant.setDate();
 
@@ -147,7 +143,7 @@ public class GatheringService {
         User user = getUserById(userId);
         Gathering gathering = getGatheringById(gatheringId);
 
-        if (user != gathering.getWriter()) {
+        if (!gathering.getWriter().getId().equals(user.getId())) {
             throw new IllegalStateException("모집글 작성자가 아닙니다.");
         }
 
@@ -159,7 +155,7 @@ public class GatheringService {
         User user = getUserById(userId);
         Gathering gathering = getGatheringById(gatheringId);
 
-        if (user != gathering.getWriter()) {
+        if (!gathering.getWriter().getId().equals(user.getId())) {
             throw new IllegalStateException("모집글 작성자가 아닙니다.");
         }
 

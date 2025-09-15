@@ -10,13 +10,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Getter;
 import tourism_data.Surfing_The_Gangwon.status.RSV_STATUS;
 
 @Entity
-@Table(name = "PARTICIPANT_TB")
+@Table(name = "PARTICIPANT_TB",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "gathering_id"}))
 @Getter
 public class Participant {
 
