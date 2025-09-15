@@ -40,7 +40,8 @@ public class UserService {
             WrittenPostResponse response = WrittenPostResponse.create(gathering.getId(),
                 gathering.getTitle(), gathering.getContents(), gathering.getPhone(),
                 gathering.getCurrentCount(), gathering.getMaxCount(), gathering.getMeetingTime(),
-                gathering.getDate(), gathering.getLevel(), gathering.getState(), gathering.getSeashore().getCity().getCityName(),
+                gathering.getDate(), gathering.getLevel(), gathering.getState(),
+                gathering.getSeashore().getCity().getCityName(),
                 gathering.getSeashore().getName(), postAction);
             responses.add(response);
         }
@@ -62,7 +63,8 @@ public class UserService {
                     gathering.getTitle(), gathering.getContents(), gathering.getPhone(),
                     gathering.getCurrentCount(), gathering.getMaxCount(), gathering.getMeetingTime(),
                     gathering.getDate(), gathering.getLevel(), gathering.getState(),
-                    gathering.getSeashore().getCity().getCityName(), gathering.getSeashore().getName(), postAction);
+                    gathering.getSeashore().getCity().getCityName(), gathering.getSeashore().getName(),
+                    postAction);
                 responses.add(response);
             }
         }
@@ -83,14 +85,13 @@ public class UserService {
     }
 
     private POST_ACTION getPostAction(User user, Gathering gathering) {
-        POST_ACTION postAction = POST_ACTION.JOIN;
-
         if (gathering.getWriter().equals(user)) {
-            postAction = POST_ACTION.COMPLETE;
-        } else if (participantRepository.existsByUserAndGathering(user, gathering)) {
-            postAction = POST_ACTION.CANCEL;
+            return POST_ACTION.COMPLETE;
         }
 
-        return postAction;
+        return participantRepository
+            .findFirstByUser_IdAndGathering_IdOrderByIdDesc(user.getId(), gathering.getId())
+            .map(p -> p.getRsvStatus() == RSV_STATUS.RESERVED ? POST_ACTION.CANCEL : POST_ACTION.JOIN)
+            .orElse(POST_ACTION.JOIN);
     }
 }
