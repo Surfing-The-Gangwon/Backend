@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 import tourism_data.Surfing_The_Gangwon.Constants.Format;
 import tourism_data.Surfing_The_Gangwon.Constants.MarkerType;
@@ -74,16 +75,89 @@ public class SeashoreService {
     }
 
     public List<SeashoreResponse> getSeashoresByCity(Long cityId) {
-        return seashoreRepository.findByCityId(cityId)
-            .stream()
-            .map((Seashore seashore) -> {
-                BeachForecastResponse forecastResponse = getBeachForecast(seashore.getBeachCode());
-                return SeashoreResponse.create(seashore, getWaterTemp(seashore.getBeachCode()),
-                    BeachForecast.create(forecastResponse), getWavePeriod(seashore.getBeachCode())
-                );
+        List<Seashore> seashores = seashoreRepository.findByCityId(cityId);
+        long totalStartTime = System.currentTimeMillis();
+        long apiStart = System.currentTimeMillis();
+        // supplyAsync()는 값을 반환하는 작업을, runAsync()는 반환 값이 없는 작업을 처리할 때 사용
+        List<CompletableFuture<SeashoreResponse>> futures = seashores.stream()
+            .map(seashore -> {
+                CompletableFuture<BeachForecastResponse> forecastFuture =
+                    CompletableFuture.supplyAsync(() -> getBeachForecast(seashore.getBeachCode()));
+                    CompletableFuture<Double> waterTempFuture =
+                        CompletableFuture.supplyAsync(() -> Double.valueOf(
+                            getWaterTemp(seashore.getBeachCode())));
+                    CompletableFuture<Double> wavePeriodFuture =
+                        CompletableFuture.supplyAsync(() -> Double.valueOf(
+                            getWavePeriod(seashore.getBeachCode())));
+
+                    // join()은 예외 처리 불필요, 작업이 완료될 때까지 기다림
+                    return CompletableFuture.allOf(forecastFuture, waterTempFuture, wavePeriodFuture)
+                        .thenApply(v -> SeashoreResponse.create(seashore,
+                            String.valueOf(waterTempFuture.join()),
+                            BeachForecast.create(forecastFuture.join()),
+                            String.valueOf(wavePeriodFuture.join())
+                        ));
             })
             .toList();
+
+        long totalEndTime = System.currentTimeMillis();
+        log.info("Total getSeashoresByCity took: {}ms for cityId: {}",
+            totalEndTime - totalStartTime, cityId);
+
+        return futures.stream()
+            .map(CompletableFuture::join)
+            .toList();
     }
+
+//    public List<SeashoreResponse> getSeashoresByCity(Long cityId) {
+//        return seashoreRepository.findByCityId(cityId)
+//            .stream()
+//            .map((Seashore seashore) -> {
+//                BeachForecastResponse forecastResponse = getBeachForecast(seashore.getBeachCode());
+//                return SeashoreResponse.create(seashore, getWaterTemp(seashore.getBeachCode()),
+//                    BeachForecast.create(forecastResponse), getWavePeriod(seashore.getBeachCode())
+//                );
+//            })
+//            .toList();
+//    }
+
+//    public List<SeashoreResponse> getSeashoresByCity(Long cityId) {
+//        long totalStartTime = System.currentTimeMillis();
+//
+//        List<SeashoreResponse> result = seashoreRepository.findByCityId(cityId)
+//            .stream()
+//            .map((Seashore seashore) -> {
+//                long apiStart = System.currentTimeMillis();
+//                BeachForecastResponse forecastResponse = getBeachForecast(seashore.getBeachCode());
+//                long apiEnd = System.currentTimeMillis();
+//                log.info("BeachForecast API call took: {}ms for beachCode: {}",
+//                    apiEnd - apiStart, seashore.getBeachCode());
+//
+//                apiStart = System.currentTimeMillis();
+//                String waterTemp = getWaterTemp(seashore.getBeachCode());
+//                apiEnd = System.currentTimeMillis();
+//                log.info("WaterTemp API call took: {}ms for beachCode: {}",
+//                    apiEnd - apiStart, seashore.getBeachCode());
+//
+//                apiStart = System.currentTimeMillis();
+//                String wavePeriod = getWavePeriod(seashore.getBeachCode());
+//                apiEnd = System.currentTimeMillis();
+//                log.info("WavePeriod API call took: {}ms for beachCode: {}",
+//                    apiEnd - apiStart, seashore.getBeachCode());
+//
+//                return SeashoreResponse.create(seashore, waterTemp,
+//                    BeachForecast.create(forecastResponse), wavePeriod
+//                );
+//            })
+//            .toList();
+//
+//        long totalEndTime = System.currentTimeMillis();
+//        log.info("Total getSeashoresByCity took: {}ms for cityId: {}",
+//            totalEndTime - totalStartTime, cityId);
+//
+//        return result;
+//    }
+
 
     public List<CityDto> getAllCities() {
         return cityRepository.findAll()
