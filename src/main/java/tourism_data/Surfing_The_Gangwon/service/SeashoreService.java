@@ -5,6 +5,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import tourism_data.Surfing_The_Gangwon.Constants.Format;
 import tourism_data.Surfing_The_Gangwon.Constants.MarkerType;
@@ -42,6 +48,7 @@ import tourism_data.Surfing_The_Gangwon.repository.MarkerRepository;
 import tourism_data.Surfing_The_Gangwon.repository.SeashoreRepository;
 import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager;
 import tourism_data.Surfing_The_Gangwon.util.ApiKeyManager.ApiKeyType;
+import tourism_data.Surfing_The_Gangwon.util.CachedData;
 import tourism_data.Surfing_The_Gangwon.util.DailyForecastParser;
 
 @Slf4j
@@ -51,6 +58,12 @@ public class SeashoreService {
     private final MarkerRepository markerRepository;
     private final CityRepository cityRepository;
     private final WeatherClient weatherClient;
+    private Executor asyncExecutor;
+
+    // 캐시 저장소 (메모리에 데이터 임시 저장) => 여러 사용자가 동시에 접근 시 안정성을 위해 ConcurrentHashMap 사용
+    private final ConcurrentHashMap<String, CachedData<BeachForecastResponse>> forecastCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, CachedData<String>> waterTempCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, CachedData<String>> wavePeriodCache = new ConcurrentHashMap<>();
 
     public SeashoreService(SeashoreRepository seashoreRepository, MarkerRepository markerRepository,
         CityRepository cityRepository,
@@ -59,6 +72,18 @@ public class SeashoreService {
         this.markerRepository = markerRepository;
         this.cityRepository = cityRepository;
         this.weatherClient = weatherClient;
+    }
+
+    @PostConstruct
+    public void init() {
+        this.asyncExecutor = Executors.newFixedThreadPool(10);
+    }
+
+    @PreDestroy
+    public void destroy() {
+        if (asyncExecutor instanceof java.util.concurrent.ExecutorService) {
+            ((java.util.concurrent.ExecutorService) asyncExecutor).shutdown();
+        }
     }
 
     public List<MarkerInfo> getMarkersBySeashore(Long seashoreId) {
@@ -76,37 +101,51 @@ public class SeashoreService {
 
     public List<SeashoreResponse> getSeashoresByCity(Long cityId) {
         List<Seashore> seashores = seashoreRepository.findByCityId(cityId);
-        long totalStartTime = System.currentTimeMillis();
-        long apiStart = System.currentTimeMillis();
-        // supplyAsync()는 값을 반환하는 작업을, runAsync()는 반환 값이 없는 작업을 처리할 때 사용
+        long startTime = System.currentTimeMillis();
+
+        // 각 해변마다 3개 API를 묶어서 처리
         List<CompletableFuture<SeashoreResponse>> futures = seashores.stream()
             .map(seashore -> {
                 CompletableFuture<BeachForecastResponse> forecastFuture =
-                    CompletableFuture.supplyAsync(() -> getBeachForecast(seashore.getBeachCode()));
-                    CompletableFuture<Double> waterTempFuture =
-                        CompletableFuture.supplyAsync(() -> Double.valueOf(
-                            getWaterTemp(seashore.getBeachCode())));
-                    CompletableFuture<Double> wavePeriodFuture =
-                        CompletableFuture.supplyAsync(() -> Double.valueOf(
-                            getWavePeriod(seashore.getBeachCode())));
+                    CompletableFuture.supplyAsync(() -> getCachedBeachForecast(seashore.getBeachCode()), asyncExecutor)
+                        .orTimeout(10, TimeUnit.SECONDS);
+                CompletableFuture<String> waterTempFuture =
+                    CompletableFuture.supplyAsync(() -> getCachedWaterTemp(seashore.getBeachCode()), asyncExecutor)
+                        .orTimeout(10, TimeUnit.SECONDS);
+                CompletableFuture<String> wavePeriodFuture =
+                    CompletableFuture.supplyAsync(() -> getCachedWavePeriod(seashore.getBeachCode()), asyncExecutor)
+                        .orTimeout(10, TimeUnit.SECONDS);
 
-                    // join()은 예외 처리 불필요, 작업이 완료될 때까지 기다림
-                    return CompletableFuture.allOf(forecastFuture, waterTempFuture, wavePeriodFuture)
-                        .thenApply(v -> SeashoreResponse.create(seashore,
-                            String.valueOf(waterTempFuture.join()),
-                            BeachForecast.create(forecastFuture.join()),
-                            String.valueOf(wavePeriodFuture.join())
-                        ));
+                return CompletableFuture.allOf(forecastFuture, waterTempFuture, wavePeriodFuture)
+                    .thenApply(v -> SeashoreResponse.create(seashore,
+                        waterTempFuture.join(),
+                        BeachForecast.create(forecastFuture.join()),
+                        wavePeriodFuture.join()
+                    ))
+                    .exceptionally(ex -> {
+                        log.error("기상청 API 호출 실패, 해변코드 {}: {}", seashore.getBeachCode(), ex.getMessage());
+                        return SeashoreResponse.create(seashore, "", null, "");
+                    });
             })
             .toList();
 
-        long totalEndTime = System.currentTimeMillis();
-        log.info("Total getSeashoresByCity took: {}ms for cityId: {}",
-            totalEndTime - totalStartTime, cityId);
-
-        return futures.stream()
+        List<SeashoreResponse> results = futures.stream()
             .map(CompletableFuture::join)
             .toList();
+
+        long endTime = System.currentTimeMillis();
+        log.info("전체 기상청 API 호출 소요 시간: {}ms, {} seashores (cityId: {})",
+            endTime - startTime, seashores.size(), cityId);
+
+        // 성능 로그 (캐시 적용 효과 확인)
+        log.info("캐시 적용 API 호출 완료: {}ms, {} 해변 (도시ID: {})",
+            endTime - startTime, seashores.size(), cityId);
+        log.info("예상 캐시 적용 효과: API 호출 수 감소, 응답 시간 단축");
+
+
+        // 일부 API가 빨리 끝나도 다른 API를 기다려야 함.
+        // 현재 상황에서는 강원도 해변이 많지 않으므로 각 해변별로 독립적으로 처리하는 방식으로 함
+        return results;
     }
 
 //    public List<SeashoreResponse> getSeashoresByCity(Long cityId) {
@@ -192,6 +231,22 @@ public class SeashoreService {
         return SeashoreDetailResponse.create(seashoreEntity, latitude, longitude);
     }
 
+    // 캐시 적용된 수온 조회
+    private String getCachedWaterTemp(Integer beachCode) {
+        String cacheKey = "waterTemp_" + beachCode + "_" + getCurrentHour();
+
+        CachedData<String> cached = waterTempCache.get(cacheKey);
+        // 1시간 TTL
+        if (cached != null && !cached.isExpired(60)) {
+            log.debug("수온 캐시 : {}", beachCode);
+            return cached.getData();
+        }
+
+        String freshData = getWaterTemp(beachCode);
+        waterTempCache.put(cacheKey, new CachedData<>(freshData, System.currentTimeMillis()));
+        return freshData;
+    }
+
     private String getWaterTemp(Integer beachCode) {
         var searchTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Format.DATE_FORMAT_ONE_LINE));
         WaterTempRequest request = WaterTempRequest.builder()
@@ -202,6 +257,29 @@ public class SeashoreService {
         WaterTempResponse response = weatherClient.getWeaterTemp(request);
         var items = response.response().body.items.item;
         return items.isEmpty() ? "" : items.getFirst().tw + Unit.CELSIUS;
+    }
+
+    private int getCurrentHour() {
+        return LocalDateTime.now().getHour();
+    }
+
+    private BeachForecastResponse getCachedBeachForecast(Integer beachCode) {
+        String cacheKey = "forecast_" + beachCode + "_" + getCurrentHour();
+
+        // 캐시에서 데이터 찾기
+        CachedData<BeachForecastResponse> cached = forecastCache.get(cacheKey);
+
+        // 캐시에 데이터가 있고, 만료되지 않았을 경우 (해양 예보의 경우 ttl 30분)
+        if (cached != null && !cached.isExpired(30)) {
+            log.debug("해양 예보 캐시 : {}", beachCode);
+            return cached.getData();
+        }
+
+        // 기존 메서드 호출 (최신 데이터 받아옴)
+        BeachForecastResponse freshData = getBeachForecast(beachCode);
+        // 새로운 데이터 캐시에 저장
+        forecastCache.put(cacheKey, new CachedData<>(freshData, System.currentTimeMillis()));
+        return freshData;
     }
 
     private BeachForecastResponse getBeachForecast(Integer beachCode) {
@@ -234,6 +312,21 @@ public class SeashoreService {
 
         // 현재 시간이 02시보다 이전이면, 전날의 23시 사용 (오전 12시 이후, 익일 02시 이전일 경우)
         return currTime.minusDays(1).withHour(23).withMinute(0).withSecond(0).withNano(0);
+    }
+
+    // 캐시 적용된 파주기 조회
+    private String getCachedWavePeriod(Integer beachCode) {
+        String cacheKey = "wavePeriod_" + beachCode + "_" + getCurrentHour();
+
+        CachedData<String> cached = wavePeriodCache.get(cacheKey);
+        if (cached != null && !cached.isExpired(15)) {
+            log.debug("파주기 캐시 : {}", beachCode);
+            return cached.getData();
+        }
+
+        String freshData = getWavePeriod(beachCode);
+        wavePeriodCache.put(cacheKey, new CachedData<>(freshData, System.currentTimeMillis()));
+        return freshData;
     }
 
     private String getWavePeriod(Integer beachCode) {
