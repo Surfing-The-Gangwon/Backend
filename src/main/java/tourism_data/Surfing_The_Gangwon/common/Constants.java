@@ -1,4 +1,4 @@
-package tourism_data.Surfing_The_Gangwon;
+package tourism_data.Surfing_The_Gangwon.common;
 
 public class Constants {
     private Constants() {}

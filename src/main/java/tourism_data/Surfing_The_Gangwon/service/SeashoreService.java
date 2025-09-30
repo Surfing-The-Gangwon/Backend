@@ -12,10 +12,12 @@ import java.util.concurrent.TimeUnit;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
-import tourism_data.Surfing_The_Gangwon.Constants.Format;
-import tourism_data.Surfing_The_Gangwon.Constants.MarkerType;
-import tourism_data.Surfing_The_Gangwon.Constants.Time;
-import tourism_data.Surfing_The_Gangwon.Constants.Unit;
+import org.springframework.scheduling.annotation.Scheduled;
+import tourism_data.Surfing_The_Gangwon.common.Constants.Format;
+import tourism_data.Surfing_The_Gangwon.common.Constants.MarkerType;
+import tourism_data.Surfing_The_Gangwon.common.Constants.Time;
+import tourism_data.Surfing_The_Gangwon.common.Constants.Unit;
+import tourism_data.Surfing_The_Gangwon.config.ThreadPoolConfig;
 import tourism_data.Surfing_The_Gangwon.dto.BeachForecast;
 import tourism_data.Surfing_The_Gangwon.dto.CityDto;
 import tourism_data.Surfing_The_Gangwon.dto.MarkerInfo;
@@ -76,7 +78,23 @@ public class SeashoreService {
 
     @PostConstruct
     public void init() {
-        this.asyncExecutor = Executors.newFixedThreadPool(10);
+        // cpu 코어 수 조회 (jvm이 사용하 수 있는 cpu 코어 수 반환) => 물리 코어 + 하이퍼스레딩
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+
+        // 스레드풀 크기 계산 (CPU 코어 수 * 배수) => CPU가 api응답을 기다리는 동안 유휴 상태
+        // 3배 할당하면 대기 시간 동안 다른 작업 처리 가능
+        int calculatedSize = availableProcessors * ThreadPoolConfig.IO_BOUND_MULTIPLIER;
+
+        // 최소값과 최대값 사이 범위 제한 (최소값 <= threadPoolSize <= 최대값)
+        int threadPoolSize = Math.max(
+            ThreadPoolConfig.MIN_THREAD_POOL_SIZE,
+            Math.min(calculatedSize, ThreadPoolConfig.MAX_THREAD_POOL_SIZE)
+        );
+
+        // 스레드풀 생성 전 로그 출력
+        log.info("스레드풀 초기화: CPU 코어 {}개, 계산된 크기 {}, 최종 크기 {}",
+            availableProcessors, calculatedSize, threadPoolSize);
+        this.asyncExecutor = Executors.newFixedThreadPool(threadPoolSize);
     }
 
     @PreDestroy
@@ -147,56 +165,6 @@ public class SeashoreService {
         // 현재 상황에서는 강원도 해변이 많지 않으므로 각 해변별로 독립적으로 처리하는 방식으로 함
         return results;
     }
-
-//    public List<SeashoreResponse> getSeashoresByCity(Long cityId) {
-//        return seashoreRepository.findByCityId(cityId)
-//            .stream()
-//            .map((Seashore seashore) -> {
-//                BeachForecastResponse forecastResponse = getBeachForecast(seashore.getBeachCode());
-//                return SeashoreResponse.create(seashore, getWaterTemp(seashore.getBeachCode()),
-//                    BeachForecast.create(forecastResponse), getWavePeriod(seashore.getBeachCode())
-//                );
-//            })
-//            .toList();
-//    }
-
-//    public List<SeashoreResponse> getSeashoresByCity(Long cityId) {
-//        long totalStartTime = System.currentTimeMillis();
-//
-//        List<SeashoreResponse> result = seashoreRepository.findByCityId(cityId)
-//            .stream()
-//            .map((Seashore seashore) -> {
-//                long apiStart = System.currentTimeMillis();
-//                BeachForecastResponse forecastResponse = getBeachForecast(seashore.getBeachCode());
-//                long apiEnd = System.currentTimeMillis();
-//                log.info("BeachForecast API call took: {}ms for beachCode: {}",
-//                    apiEnd - apiStart, seashore.getBeachCode());
-//
-//                apiStart = System.currentTimeMillis();
-//                String waterTemp = getWaterTemp(seashore.getBeachCode());
-//                apiEnd = System.currentTimeMillis();
-//                log.info("WaterTemp API call took: {}ms for beachCode: {}",
-//                    apiEnd - apiStart, seashore.getBeachCode());
-//
-//                apiStart = System.currentTimeMillis();
-//                String wavePeriod = getWavePeriod(seashore.getBeachCode());
-//                apiEnd = System.currentTimeMillis();
-//                log.info("WavePeriod API call took: {}ms for beachCode: {}",
-//                    apiEnd - apiStart, seashore.getBeachCode());
-//
-//                return SeashoreResponse.create(seashore, waterTemp,
-//                    BeachForecast.create(forecastResponse), wavePeriod
-//                );
-//            })
-//            .toList();
-//
-//        long totalEndTime = System.currentTimeMillis();
-//        log.info("Total getSeashoresByCity took: {}ms for cityId: {}",
-//            totalEndTime - totalStartTime, cityId);
-//
-//        return result;
-//    }
-
 
     public List<CityDto> getAllCities() {
         return cityRepository.findAll()
@@ -415,5 +383,23 @@ public class SeashoreService {
 
     public static String getApiHubAuthKey() {
         return ApiKeyManager.getApiKey(ApiKeyType.HUB_API);
+    }
+
+    // 개발용/디버깅용 (만료된 캐시 정리)
+    @Scheduled(cron = "0 0 * * * *") // 매 시 정각마다
+    public void cleanExpiredCache() {
+        long beforeCount = forecastCache.size() + waterTempCache.size() + wavePeriodCache.size();
+
+        // 만료된 항목들 제거
+        forecastCache.entrySet().removeIf(entry -> entry.getValue().isExpired(30));
+        waterTempCache.entrySet().removeIf(entry -> entry.getValue().isExpired(60));
+        wavePeriodCache.entrySet().removeIf(entry -> entry.getValue().isExpired(15));
+
+        long afterCount = forecastCache.size() + waterTempCache.size() + wavePeriodCache.size();
+
+        if (beforeCount > afterCount) {
+            log.info("캐시 정리 완료: {} 개 → {} 개 ({}개 삭제)",
+                beforeCount, afterCount, beforeCount - afterCount);
+        }
     }
 }

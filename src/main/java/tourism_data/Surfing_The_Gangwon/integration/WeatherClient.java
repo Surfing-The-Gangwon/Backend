@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriUtils;
 import java.time.Duration;
-import tourism_data.Surfing_The_Gangwon.Constants.URL.WEATHER;
+import tourism_data.Surfing_The_Gangwon.common.Constants.URL.WEATHER;
 import tourism_data.Surfing_The_Gangwon.dto.request.BaseRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.BeachForecastRequest;
 import tourism_data.Surfing_The_Gangwon.dto.request.DailyForecastRequest;

@@ -1,8 +1,8 @@
 package tourism_data.Surfing_The_Gangwon.dto;
 
 import lombok.Builder;
-import tourism_data.Surfing_The_Gangwon.Constants.ForecastCategory;
-import tourism_data.Surfing_The_Gangwon.Constants.Unit;
+import tourism_data.Surfing_The_Gangwon.common.Constants.ForecastCategory;
+import tourism_data.Surfing_The_Gangwon.common.Constants.Unit;
 import tourism_data.Surfing_The_Gangwon.dto.response.weather.BeachForecastResponse;
 import tourism_data.Surfing_The_Gangwon.util.Range;
 
