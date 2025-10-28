@@ -19,6 +19,19 @@ public record SeashoreResponse(
 
     public static SeashoreResponse create(Seashore seashore, String waterTemp, BeachForecast forecast,
         String wavePeriod) {
+        if (forecast == null) {
+            return SeashoreResponse.builder()
+                .id(seashore.getId())
+                .name(seashore.getName())
+                .temp("")
+                .waveHeight("")
+                .windSpeed("")
+                .windDir("")
+                .waterTemp(waterTemp)
+                .wavePeriod(wavePeriod)
+                .build();
+        }
+
         return SeashoreResponse.builder()
             .id(seashore.getId())
             .name(seashore.getName())

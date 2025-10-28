@@ -7,7 +7,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.reactive.function.client.WebClient;
-import tourism_data.Surfing_The_Gangwon.Constants.URL.WEATHER;
+import tourism_data.Surfing_The_Gangwon.common.Constants.URL.WEATHER;
 import tourism_data.Surfing_The_Gangwon.security.filter.KakaoTokenAuthenticationFilter;
 
 @Configuration
